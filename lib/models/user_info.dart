@@ -19,7 +19,7 @@ class UserInfo {
 
   factory UserInfo.fromJson(Map<String, dynamic> json) {
     return UserInfo(
-      userId: json['userId'] ?? '',
+      userId: json['uid'] ?? '',
       name: json['name'] ?? 'Khách hàng',
       phone: json['phone'] ?? 'Không tìm thấy',
       couponIds: (json['couponId'] != null && json['couponId'] is List)
