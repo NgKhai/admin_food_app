@@ -17,7 +17,7 @@ class AdminProductScreen extends StatefulWidget {
 }
 
 class _AdminProductScreenState extends State<AdminProductScreen> {
-  final ProductService _productService = ProductService();
+  final AdminProductService _productService = AdminProductService();
   List<Product> _allProducts = [];
   List<Product> _filteredProducts = [];
   List<Category> _categories = [];

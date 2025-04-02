@@ -34,7 +34,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
   // Service instances
   final _userService = AdminAccountService();
   final _orderService = AdminOrderService();
-  final _productService = ProductService();
+  final _productService = AdminProductService();
+  final _authService = AdminAuthService();
 
   @override
   void initState() {
@@ -83,7 +84,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 
   void _handleLogout() async {
-    await AdminAuthService().logout();
+    await _authService.logout();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => AdminLoginScreen()),
@@ -172,7 +173,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       fontSize: 16,
                     ),
                   ),
-                  accountEmail: Text('admin@gmail.com'),
+                  accountEmail: Text(AdminAuthService.currentUser?.email ?? "admin@gmail.com"),
                   currentAccountPicture: CircleAvatar(
                     backgroundColor: Colors.white,
                     child: Icon(

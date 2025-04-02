@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/category.dart';
 import '../models/product.dart';
 
-class ProductService {
+class AdminProductService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<List<Product>> getProductsWithCategories() async {

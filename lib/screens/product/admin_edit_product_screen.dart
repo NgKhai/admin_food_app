@@ -21,7 +21,7 @@ class AdminEditProductScreen extends StatefulWidget {
 
 class _AdminEditProductScreenState extends State<AdminEditProductScreen> {
   final _formKey = GlobalKey<FormState>();
-  final ProductService _productService = ProductService();
+  final AdminProductService _productService = AdminProductService();
   final CloudinaryService _cloudinaryService = CloudinaryService();
 
   // Image-related variables

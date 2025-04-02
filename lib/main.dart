@@ -12,14 +12,11 @@ void main() async {
     options:
     DefaultFirebaseOptions.currentPlatform,
   );
-  final authService = AdminAuthService();
-  final isLoggedIn = await authService.isLoggedIn();
-  runApp(MyApp(isLoggedIn: isLoggedIn));
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final bool isLoggedIn;
-  const MyApp({super.key, required this.isLoggedIn});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +27,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       debugShowCheckedModeBanner: false,
-      home: isLoggedIn ? AdminDashboard() : AdminLoginScreen(),
+      home: AdminLoginScreen(),
     );
   }
 }
