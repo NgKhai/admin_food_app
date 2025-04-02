@@ -12,6 +12,12 @@ class AdminLoginScreen extends StatefulWidget {
 }
 
 class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerProviderStateMixin {
+  // Color scheme
+  final Color mainColor = Color(0xFF162F4A); // Deep blue - primary
+  final Color accentColor = Color(0xFF3A5F82); // Medium blue - secondary
+  final Color lightColor = Color(0xFF718EA4); // Light blue - tertiary
+  final Color ultraLightColor = Color(0xFFD0DCE7); // Very light blue - background
+
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _authService = AdminAuthService();
@@ -27,7 +33,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 1),
     );
     _animationController.forward();
 
@@ -92,6 +98,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
     final bool isSmallScreen = screenSize.width < 600;
 
     return Scaffold(
+      backgroundColor: ultraLightColor,
       body: KeyboardListener(
         focusNode: _focusNode,
         autofocus: true,
@@ -101,17 +108,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
           }
         },
         child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color(0xFF1976D2),
-                Color(0xFF64B5F6),
-                Color(0xFFBBDEFB),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
+          color: ultraLightColor,
           child: Center(
             child: SingleChildScrollView(
               child: Padding(
@@ -132,11 +129,13 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
                         );
                       },
                       child: Card(
-                        elevation: 20,
-                        shadowColor: Colors.black38,
+                        elevation: 8,
+                        shadowColor: mainColor.withOpacity(0.3),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+                          borderRadius: BorderRadius.circular(20),
+                          side: BorderSide(color: accentColor.withOpacity(0.2), width: 1),
                         ),
+                        color: Colors.white,
                         child: Container(
                           width: cardWidth,
                           padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 40),
@@ -161,7 +160,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
                                         width: 40,
                                         height: 40,
                                         decoration: BoxDecoration(
-                                          color: Colors.redAccent,
+                                          color: mainColor,
                                           shape: BoxShape.circle,
                                         ),
                                         child: Center(
@@ -185,7 +184,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
                                   style: TextStyle(
                                     fontSize: isSmallScreen ? 22 : 26,
                                     fontWeight: FontWeight.bold,
-                                    color: Color(0xFFFD0000),
+                                    color: mainColor,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -196,7 +195,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
                                   "Đăng nhập để quản lý hệ thống",
                                   style: TextStyle(
                                     fontSize: isSmallScreen ? 14 : 16,
-                                    color: Colors.grey[600],
+                                    color: lightColor,
                                   ),
                                 ),
 
@@ -207,18 +206,24 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
                                   controller: _usernameController,
                                   decoration: InputDecoration(
                                     labelText: "Tài khoản",
+                                    labelStyle: TextStyle(color: accentColor),
                                     hintText: "Nhập tên tài khoản",
-                                    prefixIcon: Icon(Icons.person_outline, color: Colors.blue),
+                                    hintStyle: TextStyle(color: lightColor.withOpacity(0.7)),
+                                    prefixIcon: Icon(Icons.person_outline, color: accentColor),
                                     border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                      borderSide: BorderSide(color: Colors.blue),
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: accentColor),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: lightColor.withOpacity(0.5)),
                                     ),
                                     focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                      borderSide: BorderSide(color: Colors.blue, width: 2),
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: mainColor, width: 2),
                                     ),
                                     filled: true,
-                                    fillColor: Colors.grey[50],
+                                    fillColor: ultraLightColor.withOpacity(0.3),
                                     contentPadding: EdgeInsets.symmetric(vertical: 16),
                                   ),
                                   validator: (value) {
@@ -237,12 +242,14 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
                                   obscureText: !_isPasswordVisible,
                                   decoration: InputDecoration(
                                     labelText: "Mật khẩu",
+                                    labelStyle: TextStyle(color: accentColor),
                                     hintText: "Nhập mật khẩu",
-                                    prefixIcon: Icon(Icons.lock_outline, color: Colors.blue),
+                                    hintStyle: TextStyle(color: lightColor.withOpacity(0.7)),
+                                    prefixIcon: Icon(Icons.lock_outline, color: accentColor),
                                     suffixIcon: IconButton(
                                       icon: Icon(
                                         _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
-                                        color: Colors.grey,
+                                        color: lightColor,
                                       ),
                                       onPressed: () {
                                         setState(() {
@@ -251,15 +258,19 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
                                       },
                                     ),
                                     border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                      borderSide: BorderSide(color: Colors.blue),
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: accentColor),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: lightColor.withOpacity(0.5)),
                                     ),
                                     focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                      borderSide: BorderSide(color: Colors.blue, width: 2),
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: mainColor, width: 2),
                                     ),
                                     filled: true,
-                                    fillColor: Colors.grey[50],
+                                    fillColor: ultraLightColor.withOpacity(0.3),
                                     contentPadding: EdgeInsets.symmetric(vertical: 16),
                                   ),
                                   validator: (value) {
@@ -279,10 +290,11 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
                                   child: ElevatedButton(
                                     onPressed: _isLoading ? null : _handleLogin,
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.blue[700],
-                                      elevation: 10,
-                                      shadowColor: Colors.blue.withOpacity(0.5),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                                      backgroundColor: mainColor,
+                                      disabledBackgroundColor: mainColor.withOpacity(0.6),
+                                      elevation: 4,
+                                      shadowColor: mainColor.withOpacity(0.4),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                     ),
                                     child: _isLoading
                                         ? SizedBox(
@@ -309,12 +321,12 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.shield, size: 16, color: Colors.grey[600]),
+                                    Icon(Icons.shield, size: 16, color: accentColor),
                                     SizedBox(width: 5),
                                     Text(
                                       "Khu vực quản trị bảo mật",
                                       style: TextStyle(
-                                        color: Colors.grey[600],
+                                        color: lightColor,
                                         fontSize: 14,
                                       ),
                                     ),

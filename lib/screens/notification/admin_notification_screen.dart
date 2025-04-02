@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:admin_food_app/models/user_info.dart';
@@ -354,13 +352,22 @@ class _UserNotificationManagerState extends State<UserNotificationManager>
 
   @override
   Widget build(BuildContext context) {
+
+    final Color _primaryColor = Color(0xFF162F4A); // Deep blue - primary
+    final Color _accentColor = Color(0xFF3A5F82); // Medium blue - secondary
+    final Color _tertiaryColor = Color(0xFF718EA4); // Light blue - tertiary
+    final Color _backgroundColor = Color(0xFFD0DCE7); // Very light blue - background
+
     return Theme(
       data: ThemeData(
         primaryColor: _primaryColor,
         colorScheme: ColorScheme.light(
           primary: _primaryColor,
           secondary: _accentColor,
+          tertiary: _tertiaryColor,
+          background: _backgroundColor,
         ),
+        scaffoldBackgroundColor: _backgroundColor,
         appBarTheme: AppBarTheme(
           backgroundColor: _primaryColor,
           foregroundColor: Colors.white,
@@ -370,15 +377,14 @@ class _UserNotificationManagerState extends State<UserNotificationManager>
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white.withOpacity(0.6),
           indicator: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
+            color: _accentColor,
             borderRadius: BorderRadius.circular(30),
           ),
         ),
         cardTheme: CardTheme(
-          elevation: 8,
-          shadowColor: Colors.black26,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 4,
+          shadowColor: _primaryColor.withOpacity(0.2),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
@@ -875,23 +881,17 @@ class _UserNotificationManagerState extends State<UserNotificationManager>
                               duration: const Duration(milliseconds: 300),
                               margin: const EdgeInsets.only(bottom: 12),
                               decoration: BoxDecoration(
-                                color: isSelected
-                                    ? _primaryColor.withOpacity(0.05)
-                                    : Colors.white,
+                                color: isSelected ? _accentColor.withOpacity(0.1) : Colors.white,
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: isSelected
-                                      ? _primaryColor
-                                      : Colors.grey.shade200,
+                                  color: isSelected ? _accentColor : Colors.grey.shade200,
                                   width: isSelected ? 2 : 1,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: isSelected
-                                        ? _primaryColor.withOpacity(0.15)
-                                        : Colors.grey.withOpacity(0.1),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
+                                    color: isSelected ? _primaryColor.withOpacity(0.15) : Colors.grey.withOpacity(0.1),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
                                   ),
                                 ],
                               ),

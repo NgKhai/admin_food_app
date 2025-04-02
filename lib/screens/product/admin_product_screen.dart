@@ -17,6 +17,12 @@ class AdminProductScreen extends StatefulWidget {
 }
 
 class _AdminProductScreenState extends State<AdminProductScreen> {
+  // Color scheme
+  final Color mainColor = Color(0xFF162F4A); // Deep blue - primary
+  final Color accentColor = Color(0xFF3A5F82); // Medium blue - secondary
+  final Color lightColor = Color(0xFF718EA4); // Light blue - tertiary
+  final Color ultraLightColor = Color(0xFFD0DCE7); // Very light blue - background
+
   final AdminProductService _productService = AdminProductService();
   List<Product> _allProducts = [];
   List<Product> _filteredProducts = [];
@@ -57,7 +63,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
 
       // Fetch categories
       final categoriesSnapshot =
-          await FirebaseFirestore.instance.collection('categories').get();
+      await FirebaseFirestore.instance.collection('categories').get();
 
       setState(() {
         _allProducts = products;
@@ -129,6 +135,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
   void _showFilterBottomSheet() {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -136,6 +143,10 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
         builder: (context, setSheetState) {
           return Container(
             padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -145,7 +156,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple,
+                    color: mainColor,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -154,37 +165,50 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                 // Category Filter
                 Text(
                   'Phân loại',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: accentColor,
+                  ),
                 ),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
                       // All Categories Chip
-                      ChoiceChip(
-                        label: Text('Tất cả'),
-                        selected: _selectedCategoryId == null,
-                        onSelected: (bool selected) {
-                          setSheetState(() {
-                            _selectedCategoryId = null;
-                          });
-                          setState(() {
-                            _filterProducts();
-                          });
-                        },
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4),
+                        child: ChoiceChip(
+                          label: Text('Tất cả'),
+                          selected: _selectedCategoryId == null,
+                          selectedColor: lightColor,
+                          labelStyle: TextStyle(
+                            color: _selectedCategoryId == null
+                                ? Colors.white
+                                : mainColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          backgroundColor: ultraLightColor,
+                          onSelected: (bool selected) {
+                            setSheetState(() {
+                              _selectedCategoryId = null;
+                            });
+                            setState(() {
+                              _filterProducts();
+                            });
+                          },
+                        ),
                       ),
                       // Dynamic Category Chips
                       ..._categories.map(
-                        (category) => Padding(
+                            (category) => Padding(
                           padding: EdgeInsets.symmetric(horizontal: 4),
                           child: ChoiceChip(
                             label: Text(category.categoryName),
-                            selected:
-                                _selectedCategoryId == category.categoryId,
+                            selected: _selectedCategoryId == category.categoryId,
                             backgroundColor: Color(
                                 int.parse('0xFF${category.categoryColor}')),
                             selectedColor: Color(
-                                    int.parse('0xFF${category.categoryColor}'))
+                                int.parse('0xFF${category.categoryColor}'))
                                 .withOpacity(0.7),
                             labelStyle: TextStyle(
                               color: Colors.white,
@@ -193,7 +217,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                             onSelected: (bool selected) {
                               setSheetState(() {
                                 _selectedCategoryId =
-                                    selected ? category.categoryId : null;
+                                selected ? category.categoryId : null;
                               });
                               setState(() {
                                 _filterProducts();
@@ -210,35 +234,56 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                 // Sorting
                 Text(
                   'Sắp xếp theo',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: accentColor,
+                  ),
                 ),
-                DropdownButton<String>(
-                  value: _currentSortOption,
-                  items: _sortOptions.map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      setSheetState(() {
-                        _currentSortOption = newValue;
-                      });
-                      setState(() {
-                        _filterProducts();
-                      });
-                    }
-                  },
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: lightColor),
+                    color: Colors.white,
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _currentSortOption,
+                      isExpanded: true,
+                      icon: Icon(Icons.arrow_drop_down, color: mainColor),
+                      items: _sortOptions.map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(
+                            value,
+                            style: TextStyle(color: mainColor),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setSheetState(() {
+                            _currentSortOption = newValue;
+                          });
+                          setState(() {
+                            _filterProducts();
+                          });
+                        }
+                      },
+                    ),
+                  ),
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: 24),
 
                 // Apply Button
                 ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
-                    padding: EdgeInsets.symmetric(vertical: 12),
+                    backgroundColor: mainColor,
+                    padding: EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                   child: Text(
                     'Áp dụng',
@@ -249,7 +294,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: 30),
+                SizedBox(height: 20),
               ],
             ),
           );
@@ -264,17 +309,34 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
         contentPadding: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Product Image
               ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
                 child: CachedNetworkImage(
                   imageUrl: product.productImg,
                   height: 250,
-                  fit: BoxFit.fitHeight,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    height: 250,
+                    color: ultraLightColor,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(mainColor),
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    height: 250,
+                    color: ultraLightColor,
+                    child: Icon(Icons.error, color: mainColor),
+                  ),
                 ),
               ),
 
@@ -289,7 +351,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple,
+                        color: mainColor,
                       ),
                     ),
                     SizedBox(height: 8),
@@ -302,7 +364,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                           Utils.formatCurrency(product.productPrice),
                           style: TextStyle(
                             fontSize: 18,
-                            color: Colors.green,
+                            color: accentColor,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -317,24 +379,40 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                           ),
                       ],
                     ),
-                    SizedBox(height: 8),
+                    SizedBox(height: 16),
 
                     // Additional Details
-                    Row(
-                      children: [
-                        Icon(Icons.timer, color: Colors.orange),
-                        SizedBox(width: 8),
-                        Text(
-                            'Thời gian chuẩn bị: ${product.productPreparationTime} phút'),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(Icons.local_fire_department, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text('Lượng Calo: ${product.productCalo} calo'),
-                      ],
+                    Container(
+                      padding: EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: ultraLightColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.timer, color: accentColor),
+                              SizedBox(width: 8),
+                              Text(
+                                'Thời gian chuẩn bị: ${product.productPreparationTime} phút',
+                                style: TextStyle(color: mainColor),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Icon(Icons.local_fire_department, color: accentColor),
+                              SizedBox(width: 8),
+                              Text(
+                                'Lượng Calo: ${product.productCalo} calo',
+                                style: TextStyle(color: mainColor),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
 
                     // Description
@@ -344,11 +422,13 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
+                        color: mainColor,
                       ),
                     ),
+                    SizedBox(height: 4),
                     Text(
                       product.productDescription,
-                      style: TextStyle(color: Colors.grey[700]),
+                      style: TextStyle(color: accentColor),
                     ),
 
                     // Sizes
@@ -359,21 +439,38 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: mainColor,
                         ),
                       ),
-                      ...product.sizes.map((size) => Padding(
+                      SizedBox(height: 8),
+                      Container(
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: ultraLightColor),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          children: product.sizes.map((size) => Padding(
                             padding: EdgeInsets.symmetric(vertical: 4),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(size.sizeName),
+                                Text(
+                                  size.sizeName,
+                                  style: TextStyle(color: mainColor),
+                                ),
                                 Text(
                                   '+${Utils.formatCurrency(size.extraPrice)}',
-                                  style: TextStyle(color: Colors.green),
+                                  style: TextStyle(
+                                    color: accentColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ],
                             ),
-                          )),
+                          )).toList(),
+                        ),
+                      ),
                     ],
                   ],
                 ),
@@ -384,7 +481,13 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Đóng'),
+            style: TextButton.styleFrom(
+              foregroundColor: mainColor,
+            ),
+            child: Text(
+              'Đóng',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -394,13 +497,22 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Menu',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        backgroundColor: Colors.deepPurple[400],
+        title: Text(
+          'Menu',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: mainColor,
         centerTitle: true,
         elevation: 0,
-        leading: IconButton(onPressed: () => Navigator.pop(context), icon: Icon(CupertinoIcons.back, color: Colors.white, size: 32,)),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: Icon(CupertinoIcons.back, color: Colors.white, size: 28),
+        ),
         actions: [
           // Filter Button
           IconButton(
@@ -420,37 +532,48 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
       body: Column(
         children: [
           // Search Bar
-          Padding(
-            padding: EdgeInsets.all(12),
+          Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: mainColor,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+            ),
             child: TextField(
               controller: _searchController,
+              style: TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Tìm kiếm sản phẩm...',
-                prefixIcon: Icon(Icons.search, color: Colors.deepPurple),
+                hintStyle: TextStyle(color: Colors.white70),
+                prefixIcon: Icon(Icons.search, color: Colors.white70),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: Icon(Icons.clear, color: Colors.deepPurple),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {
-                            _searchQuery = '';
-                            _filterProducts();
-                          });
-                        },
-                      )
+                  icon: Icon(Icons.clear, color: Colors.white70),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() {
+                      _searchQuery = '';
+                      _filterProducts();
+                    });
+                  },
+                )
                     : null,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.deepPurple.shade100),
+                  borderSide: BorderSide(color: Colors.white24),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.deepPurple.shade100),
+                  borderSide: BorderSide(color: Colors.white24),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.deepPurple, width: 2),
+                  borderSide: BorderSide(color: Colors.white, width: 1.5),
                 ),
+                filled: true,
+                fillColor: accentColor,
               ),
               onChanged: (value) {
                 setState(() {
@@ -462,22 +585,30 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
           ),
 
           // Product Count and Sort Info
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+          Container(
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '${_filteredProducts.length} Sản phẩm',
-                  style: TextStyle(
-                    color: Colors.grey[700],
-                    fontWeight: FontWeight.bold,
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: ultraLightColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${_filteredProducts.length} Sản phẩm',
+                    style: TextStyle(
+                      color: mainColor,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 Text(
-                  'Sắp xếp theo: $_currentSortOption',
+                  'Sắp xếp: $_currentSortOption',
                   style: TextStyle(
-                    color: Colors.grey[700],
+                    color: lightColor,
+                    fontSize: 13,
                   ),
                 ),
               ],
@@ -488,146 +619,196 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
           Expanded(
             child: _isLoading
                 ? Center(
-                    child: CircularProgressIndicator(
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(Colors.deepPurple),
-                    ),
-                  )
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(mainColor),
+              ),
+            )
                 : _filteredProducts.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.search_off,
-                              size: 100,
-                              color: Colors.grey[300],
-                            ),
-                            SizedBox(height: 16),
-                            Text(
-                              'Không tìm thấy sản phẩm',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.grey[600],
+                ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.search_off,
+                    size: 100,
+                    color: ultraLightColor,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Không tìm thấy sản phẩm',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: lightColor,
+                    ),
+                  ),
+                ],
+              ),
+            )
+                : ListView.builder(
+              padding: EdgeInsets.all(12),
+              itemCount: _filteredProducts.length,
+              itemBuilder: (context, index) {
+                Product product = _filteredProducts[index];
+                return GestureDetector(
+                  onTap: () {
+                    _showProductDetailsDialog(product);
+                  },
+                  child: Container(
+                    margin: EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: mainColor.withOpacity(0.08),
+                          spreadRadius: 1,
+                          blurRadius: 8,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: ultraLightColor,
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        ListTile(
+                          contentPadding: EdgeInsets.all(12),
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: CachedNetworkImage(
+                              imageUrl: product.productImg,
+                              width: 80,
+                              height: 80,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                width: 80,
+                                height: 80,
+                                color: ultraLightColor,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(mainColor),
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                width: 80,
+                                height: 80,
+                                color: ultraLightColor,
+                                child: Icon(Icons.error, color: mainColor),
                               ),
                             ),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: EdgeInsets.all(12),
-                        itemCount: _filteredProducts.length,
-                        itemBuilder: (context, index) {
-                          Product product = _filteredProducts[index];
-                          return GestureDetector(
-                            onTap: () {
-                              _showProductDetailsDialog(product);
-                            },
-                            child: Container(
-                              margin: EdgeInsets.only(bottom: 16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(15),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.2),
-                                    spreadRadius: 2,
-                                    blurRadius: 5,
-                                    offset: Offset(0, 3),
+                          ),
+                          title: Text(
+                            product.productName,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: mainColor,
+                            ),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: 4),
+                              Text(
+                                Utils.formatCurrency(product.productPrice),
+                                style: TextStyle(
+                                  color: accentColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.timer,
+                                    size: 16,
+                                    color: lightColor,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    '${product.productPreparationTime} phút',
+                                    style: TextStyle(color: lightColor),
+                                  ),
+                                  SizedBox(width: 12),
+                                  Icon(
+                                    Icons.local_fire_department,
+                                    size: 16,
+                                    color: lightColor,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    '${product.productCalo} calo',
+                                    style: TextStyle(color: lightColor),
                                   ),
                                 ],
                               ),
-                              child: ListTile(
-                                contentPadding: EdgeInsets.all(12),
-                                leading: ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: CachedNetworkImage(
-                                    imageUrl: product.productImg,
-                                    width: 80,
-                                    height: 80,
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) => Center(
-                                      child: CircularProgressIndicator(
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
-                                      ),
+                            ],
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.edit, color: accentColor),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AdminEditProductScreen(product: product),
                                     ),
-                                    errorWidget: (context, url, error) => Icon(Icons.error),
-                                  ),
-                                ),
-                                title: Text(
-                                  product.productName,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      Utils.formatCurrency(product.productPrice),
-                                      style: TextStyle(
-                                        color: Colors.green[700],
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        Icon(Icons.timer, size: 16, color: Colors.grey),
-                                        SizedBox(width: 4),
-                                        Text(
-                                          '${product.productPreparationTime} phút',
-                                          style: TextStyle(color: Colors.grey),
-                                        ),
-                                        SizedBox(width: 12),
-                                        Icon(Icons.local_fire_department, size: 16, color: Colors.orange),
-                                        SizedBox(width: 4),
-                                        Text(
-                                          '${product.productCalo} calo',
-                                          style: TextStyle(color: Colors.grey),
-                                        ),
-                                      ],
-                                    ),
-                                    if (product.category != null)
-                                      Chip(
-                                        label: Text(
-                                          product.category!.categoryName,
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                        backgroundColor: Color(int.parse('0xFF${product.category!.categoryColor}')),
-                                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      ),
-                                  ],
-                                ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(Icons.edit, color: Colors.blue),
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => AdminEditProductScreen(product: product),
-                                          ),
-                                        ).then((_) => _fetchProductsAndCategories());
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: Icon(Icons.delete, color: Colors.red),
-                                      onPressed: () => _deleteProduct(product),
-                                    ),
-                                  ],
-                                ),
+                                  ).then((_) => _fetchProductsAndCategories());
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red[400]),
+                                onPressed: () => _deleteProduct(product),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (product.category != null)
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Color(int.parse('0xFF${product.category!.categoryColor}')).withOpacity(0.2),
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(15),
+                                bottomRight: Radius.circular(15),
                               ),
                             ),
-                          );
-                        },
-                      ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Color(int.parse('0xFF${product.category!.categoryColor}')),
+                                  ),
+                                ),
+                                SizedBox(width: 6),
+                                Text(
+                                  product.category!.categoryName,
+                                  style: TextStyle(
+                                    color: Color(int.parse('0xFF${product.category!.categoryColor}')),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -638,18 +819,32 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     bool? confirm = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Xóa Sản Phẩm'),
-        content:
-        Text('Bạn có chắc chắn muốn xóa "${product.productName}" không?'),
+        title: Text(
+          'Xóa Sản Phẩm',
+          style: TextStyle(color: mainColor, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Bạn có chắc chắn muốn xóa "${product.productName}" không?',
+          style: TextStyle(color: accentColor),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Hủy'),
+            child: Text(
+              'Hủy',
+              style: TextStyle(color: lightColor),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text('Xóa'),
+            child: Text(
+              'Xóa',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -662,7 +857,11 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${product.productName} đã được xóa thành công'),
-            backgroundColor: Colors.green,
+            backgroundColor: accentColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       } catch (e) {
@@ -670,6 +869,10 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
           SnackBar(
             content: Text('Không thể xóa sản phẩm: $e'),
             backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       }

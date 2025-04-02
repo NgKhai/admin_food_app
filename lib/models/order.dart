@@ -5,6 +5,7 @@ import 'cart_item.dart';
 class OrderProduct {
   final String orderId;
   final String userId;
+  final String? nameCustomer;
   final String? orderCouponId;
   final String? shippingCouponId;
   final String pickUpAddressId;
@@ -29,6 +30,7 @@ class OrderProduct {
   OrderProduct(
     this.orderId,
     this.userId,
+    this.nameCustomer,
     this.orderCouponId,
     this.shippingCouponId,
     this.pickUpAddressId,
@@ -55,6 +57,7 @@ class OrderProduct {
     return OrderProduct(
       json['orderId'] ?? '',
       json['userId'] ?? '',
+      json['nameCustomer'] ?? '',
       json['orderCouponId'],
       json['shippingCouponId'],
       json['pickUpAddressId'] ?? '',
@@ -84,6 +87,7 @@ class OrderProduct {
     return {
       'orderId': orderId,
       'userId': userId,
+      'nameCustomer': nameCustomer,
       'orderCouponId': orderCouponId,
       'shippingCouponId': shippingCouponId,
       'pickUpAddressId': pickUpAddressId, // Convert Address to JSON

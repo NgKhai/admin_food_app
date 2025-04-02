@@ -15,6 +15,12 @@ class AddressEditScreen extends StatefulWidget {
 }
 
 class _AddressEditScreenState extends State<AddressEditScreen> {
+  // New color scheme
+  final Color mainColor = Color(0xFF162F4A); // Deep blue - primary
+  final Color accentColor = Color(0xFF3A5F82); // Medium blue - secondary
+  final Color lightColor = Color(0xFF718EA4); // Light blue - tertiary
+  final Color ultraLightColor = Color(0xFFD0DCE7); // Very light blue - background
+
   final AddressService _addressService = AddressService();
   final _formKey = GlobalKey<FormState>();
 
@@ -72,18 +78,27 @@ class _AddressEditScreenState extends State<AddressEditScreen> {
         if (widget.address != null) {
           await _addressService.updateAddress(address);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Cập nhật địa chỉ thành công')),
+            SnackBar(
+              content: Text('Cập nhật địa chỉ thành công'),
+              backgroundColor: accentColor,
+            ),
           );
         } else {
           await _addressService.addAddress(address);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Thêm địa chỉ thành công')),
+            SnackBar(
+              content: Text('Thêm địa chỉ thành công'),
+              backgroundColor: accentColor,
+            ),
           );
         }
         Navigator.pop(context);
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: ${e.toString()}')),
+          SnackBar(
+            content: Text('Lỗi: ${e.toString()}'),
+            backgroundColor: Colors.red.shade700,
+          ),
         );
       }
     }
@@ -103,19 +118,23 @@ class _AddressEditScreenState extends State<AddressEditScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: ultraLightColor.withOpacity(0.3),
       appBar: AppBar(
-        title: Text(widget.address != null ? 'Chỉnh sửa địa chỉ' : 'Thêm địa chỉ mới',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        backgroundColor: Colors.blue.shade800,
-        elevation: 0,
+        title: Text(
+          widget.address != null ? 'Chỉnh sửa địa chỉ' : 'Thêm địa chỉ mới',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        backgroundColor: mainColor,
+        elevation: 2,
         centerTitle: true,
         leading: IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: Icon(
-              CupertinoIcons.back,
-              color: Colors.white,
-              size: 32,
-            )),
+          onPressed: () => Navigator.pop(context),
+          icon: Icon(
+            CupertinoIcons.back,
+            color: Colors.white,
+            size: 26,
+          ),
+        ),
       ),
       body: Row(
         children: [
@@ -124,6 +143,16 @@ class _AddressEditScreenState extends State<AddressEditScreen> {
             flex: 1,
             child: Container(
               padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 5,
+                    offset: Offset(2, 0),
+                  ),
+                ],
+              ),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -132,40 +161,63 @@ class _AddressEditScreenState extends State<AddressEditScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
-                        vertical: 8,
+                        vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
+                        color: ultraLightColor,
                         borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: lightColor.withOpacity(0.5)),
                       ),
                       child: Row(
                         children: [
                           Icon(
                             Icons.info_outline,
-                            color: Colors.blue.shade700,
+                            color: mainColor,
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               'Nhấp vào bản đồ để chọn vị trí hoặc nhập thủ công tọa độ',
                               style: TextStyle(
-                                color: Colors.blue.shade700,
+                                color: mainColor,
+                                fontSize: 13.5,
                               ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
+                    Text(
+                      'Thông tin địa chỉ',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: mainColor,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     TextFormField(
                       controller: _addressNameController,
                       decoration: InputDecoration(
                         labelText: 'Tên địa chỉ',
+                        labelStyle: TextStyle(color: accentColor),
                         hintText: 'Nhập tên hoặc mô tả địa chỉ',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: lightColor),
                         ),
-                        prefixIcon: const Icon(Icons.location_city),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: accentColor, width: 2),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: lightColor),
+                        ),
+                        prefixIcon: Icon(Icons.location_city, color: accentColor),
+                        filled: true,
+                        fillColor: Colors.white,
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -174,16 +226,16 @@ class _AddressEditScreenState extends State<AddressEditScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     Text(
                       'Tọa độ',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.grey.shade800,
+                        fontSize: 18,
+                        color: mainColor,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     Row(
                       children: [
                         Expanded(
@@ -191,11 +243,22 @@ class _AddressEditScreenState extends State<AddressEditScreen> {
                             controller: _latitudeController,
                             decoration: InputDecoration(
                               labelText: 'Vĩ độ',
+                              labelStyle: TextStyle(color: accentColor),
                               hintText: 'Vĩ độ',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              prefixIcon: const Icon(Icons.north),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide(color: accentColor, width: 2),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide(color: lightColor),
+                              ),
+                              prefixIcon: Icon(Icons.north, color: accentColor),
+                              filled: true,
+                              fillColor: Colors.white,
                             ),
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
                             onChanged: (value) {
@@ -226,11 +289,22 @@ class _AddressEditScreenState extends State<AddressEditScreen> {
                             controller: _longitudeController,
                             decoration: InputDecoration(
                               labelText: 'Kinh độ',
+                              labelStyle: TextStyle(color: accentColor),
                               hintText: 'Kinh độ',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              prefixIcon: const Icon(Icons.east),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide(color: accentColor, width: 2),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide(color: lightColor),
+                              ),
+                              prefixIcon: Icon(Icons.east, color: accentColor),
+                              filled: true,
+                              fillColor: Colors.white,
                             ),
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
                             onChanged: (value) {
@@ -257,17 +331,37 @@ class _AddressEditScreenState extends State<AddressEditScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    SwitchListTile(
-                      title: const Text('Cho phép kéo đánh dấu'),
-                      subtitle: const Text('Bật để có thể kéo đánh dấu trên bản đồ'),
-                      value: _isMarkerDraggable,
-                      activeColor: Colors.blue.shade700,
-                      onChanged: (value) {
-                        setState(() {
-                          _isMarkerDraggable = value;
-                        });
-                      },
+                    const SizedBox(height: 20),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: lightColor),
+                      ),
+                      child: SwitchListTile(
+                        title: Text(
+                          'Cho phép kéo đánh dấu',
+                          style: TextStyle(
+                            color: mainColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Bật để có thể kéo đánh dấu trên bản đồ',
+                          style: TextStyle(
+                            color: lightColor,
+                            fontSize: 13,
+                          ),
+                        ),
+                        value: _isMarkerDraggable,
+                        activeColor: mainColor,
+                        activeTrackColor: lightColor,
+                        onChanged: (value) {
+                          setState(() {
+                            _isMarkerDraggable = value;
+                          });
+                        },
+                      ),
                     ),
                     const Spacer(),
                     Row(
@@ -276,14 +370,18 @@ class _AddressEditScreenState extends State<AddressEditScreen> {
                           child: ElevatedButton.icon(
                             onPressed: _saveAddress,
                             icon: const Icon(Icons.save),
-                            label: const Text('Lưu địa chỉ'),
+                            label: const Text(
+                              'Lưu địa chỉ',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                            ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue.shade700,
+                              backgroundColor: mainColor,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
+                              elevation: 2,
                             ),
                           ),
                         ),
@@ -292,10 +390,14 @@ class _AddressEditScreenState extends State<AddressEditScreen> {
                           child: OutlinedButton.icon(
                             onPressed: () => Navigator.pop(context),
                             icon: const Icon(Icons.cancel),
-                            label: const Text('Hủy'),
+                            label: const Text(
+                              'Hủy',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                            ),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.red.shade700,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              foregroundColor: mainColor,
+                              side: BorderSide(color: mainColor),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -316,7 +418,7 @@ class _AddressEditScreenState extends State<AddressEditScreen> {
             child: Container(
               decoration: BoxDecoration(
                 border: Border(
-                  left: BorderSide(color: Colors.grey.shade300),
+                  left: BorderSide(color: ultraLightColor),
                 ),
               ),
               child: Stack(
@@ -346,14 +448,14 @@ class _AddressEditScreenState extends State<AddressEditScreen> {
                             child: _isMarkerDraggable
                                 ? Draggable<LatLng>(
                               key: _markerKey,
-                              feedback: const Icon(
+                              feedback: Icon(
                                 Icons.location_on,
-                                color: Colors.red,
+                                color: mainColor,
                                 size: 40,
                               ),
-                              childWhenDragging: const Icon(
+                              childWhenDragging: Icon(
                                 Icons.location_on,
-                                color: Colors.grey,
+                                color: lightColor.withOpacity(0.5),
                                 size: 40,
                               ),
                               data: LatLng(_latitude, _longitude),
@@ -378,15 +480,15 @@ class _AddressEditScreenState extends State<AddressEditScreen> {
 
                                 _updateCoordinates(LatLng(newLat, newLng));
                               },
-                              child: const Icon(
+                              child: Icon(
                                 Icons.location_on,
-                                color: Colors.red,
+                                color: mainColor,
                                 size: 40,
                               ),
                             )
-                                : const Icon(
+                                : Icon(
                               Icons.location_on,
-                              color: Colors.red,
+                              color: mainColor,
                               size: 40,
                             ),
                           ),
@@ -401,11 +503,11 @@ class _AddressEditScreenState extends State<AddressEditScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.1),
-                            blurRadius: 4,
+                            blurRadius: 5,
                             spreadRadius: 1,
                           ),
                         ],
@@ -413,23 +515,23 @@ class _AddressEditScreenState extends State<AddressEditScreen> {
                       child: Column(
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.add),
+                            icon: Icon(Icons.add, color: mainColor),
                             onPressed: () {
                               final currentZoom = _mapController.camera.zoom;
                               _mapController.moveAndRotate(LatLng(_latitude, _longitude), currentZoom + 1, 0);
                             },
                           ),
-                          Divider(height: 1, color: Colors.grey.shade300),
+                          Divider(height: 1, color: ultraLightColor),
                           IconButton(
-                            icon: const Icon(Icons.remove),
+                            icon: Icon(Icons.remove, color: mainColor),
                             onPressed: () {
                               final currentZoom = _mapController.camera.zoom;
                               _mapController.moveAndRotate(LatLng(_latitude, _longitude), currentZoom - 1, 0);
                             },
                           ),
-                          Divider(height: 1, color: Colors.grey.shade300),
+                          Divider(height: 1, color: ultraLightColor),
                           IconButton(
-                            icon: const Icon(Icons.my_location),
+                            icon: Icon(Icons.my_location, color: mainColor),
                             onPressed: () {
                               _mapController.moveAndRotate(LatLng(_latitude, _longitude), 16, 0);
                             },
@@ -444,29 +546,31 @@ class _AddressEditScreenState extends State<AddressEditScreen> {
                     left: 16,
                     right: 16,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.1),
                             blurRadius: 4,
-                            spreadRadius: 1,
+                            spreadRadius: 0,
                           ),
                         ],
+                        border: Border.all(color: ultraLightColor),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.pin_drop, color: Colors.red.shade700),
-                          const SizedBox(width: 8),
+                          Icon(Icons.pin_drop, color: mainColor),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               _isMarkerDraggable
                                   ? 'Nhấp vào bản đồ hoặc kéo điểm đánh dấu để chọn vị trí'
                                   : 'Nhấp vào bản đồ để chọn vị trí',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: accentColor,
                               ),
                             ),
                           ),

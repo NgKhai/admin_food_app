@@ -5,12 +5,19 @@ import '../../services/admin_address_service.dart';
 import 'address_map_view.dart';
 import 'admin_address_form_screen.dart';
 
+// Application color theme
+class AppColors {
+  static const Color mainColor = Color(0xFF162F4A); // Deep blue - primary
+  static const Color accentColor = Color(0xFF3A5F82); // Medium blue - secondary
+  static const Color lightColor = Color(0xFF718EA4); // Light blue - tertiary
+  static const Color ultraLightColor = Color(0xFFD0DCE7); // Very light blue - background
+}
+
 class AddressManagementScreen extends StatefulWidget {
   const AddressManagementScreen({Key? key}) : super(key: key);
 
   @override
-  _AddressManagementScreenState createState() =>
-      _AddressManagementScreenState();
+  _AddressManagementScreenState createState() => _AddressManagementScreenState();
 }
 
 class _AddressManagementScreenState extends State<AddressManagementScreen> {
@@ -49,19 +56,23 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Xác nhận xóa'),
-          content: Text(
-              'Bạn có chắc chắn muốn xóa địa chỉ "${address.addressName}"?'),
+          content: Text('Bạn có chắc chắn muốn xóa địa chỉ "${address.addressName}"?'),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Hủy'),
+              child: Text('Hủy', style: TextStyle(color: AppColors.accentColor)),
             ),
             TextButton(
               onPressed: () {
                 _addressService.deleteAddress(address.addressId);
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Xóa địa chỉ thành công')),
+                  SnackBar(
+                    content: const Text('Xóa địa chỉ thành công'),
+                    backgroundColor: AppColors.accentColor,
+                  ),
                 );
               },
               child: const Text('Xóa', style: TextStyle(color: Colors.red)),
@@ -76,9 +87,7 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
     if (_searchQuery.isEmpty) return addresses;
 
     return addresses.where((address) {
-      return address.addressName
-          .toLowerCase()
-          .contains(_searchQuery.toLowerCase());
+      return address.addressName.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
   }
 
@@ -114,19 +123,27 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.ultraLightColor,
       appBar: AppBar(
-        title: Text('Quản lý địa chỉ',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        backgroundColor: Colors.blue.shade800,
+        title: const Text(
+          'Quản lý địa chỉ',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            fontSize: 20,
+          ),
+        ),
+        backgroundColor: AppColors.mainColor,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: Icon(
-              CupertinoIcons.back,
-              color: Colors.white,
-              size: 32,
-            )),
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(
+            CupertinoIcons.back,
+            color: Colors.white,
+            size: 28,
+          ),
+        ),
       ),
       body: Column(
         children: [
@@ -137,7 +154,7 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
+                  color: AppColors.lightColor.withOpacity(0.2),
                   spreadRadius: 1,
                   blurRadius: 3,
                   offset: const Offset(0, 2),
@@ -152,13 +169,14 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
                     controller: _searchController,
                     decoration: InputDecoration(
                       hintText: 'Tìm kiếm địa chỉ...',
-                      prefixIcon: const Icon(Icons.search),
+                      hintStyle: TextStyle(color: AppColors.lightColor),
+                      prefixIcon: Icon(Icons.search, color: AppColors.accentColor),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide.none,
                       ),
                       filled: true,
-                      fillColor: Colors.grey.shade100,
+                      fillColor: AppColors.ultraLightColor,
                       contentPadding: const EdgeInsets.symmetric(vertical: 0),
                     ),
                     onChanged: (value) {
@@ -166,6 +184,7 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
                         _searchQuery = value;
                       });
                     },
+                    style: TextStyle(color: AppColors.mainColor),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -174,14 +193,17 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
+                      color: AppColors.ultraLightColor,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         value: _sortBy,
                         isExpanded: true,
-                        hint: const Text('Sắp xếp theo'),
+                        hint: Text('Sắp xếp theo', style: TextStyle(color: AppColors.lightColor)),
+                        dropdownColor: Colors.white,
+                        icon: Icon(Icons.arrow_drop_down, color: AppColors.accentColor),
+                        style: TextStyle(color: AppColors.mainColor, fontSize: 14),
                         items: const [
                           DropdownMenuItem(
                             value: 'name',
@@ -207,13 +229,13 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
                   icon: const Icon(Icons.add_location_alt),
                   label: const Text('Thêm mới'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade700,
+                    backgroundColor: AppColors.mainColor,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 12, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
+                    elevation: 0,
                   ),
                 ),
               ],
@@ -227,39 +249,45 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return Center(
-                    child: Text('Lỗi: ${snapshot.error}'),
+                    child: Text(
+                      'Lỗi: ${snapshot.error}',
+                      style: TextStyle(color: AppColors.mainColor),
+                    ),
                   );
                 }
 
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return Center(
+                    child: CircularProgressIndicator(color: AppColors.accentColor),
+                  );
                 }
 
                 var addresses = snapshot.data ?? [];
 
                 if (addresses.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           Icons.location_off,
                           size: 64,
-                          color: Colors.grey,
+                          color: AppColors.lightColor,
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         Text(
                           'Chưa có địa chỉ nào',
                           style: TextStyle(
                             fontSize: 18,
-                            color: Colors.grey,
+                            color: AppColors.accentColor,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text(
                           'Nhấn nút "Thêm mới" để bắt đầu',
                           style: TextStyle(
-                            color: Colors.grey,
+                            color: AppColors.lightColor,
                           ),
                         ),
                       ],
@@ -279,14 +307,14 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
                         Icon(
                           Icons.search_off,
                           size: 64,
-                          color: Colors.grey,
+                          color: AppColors.lightColor,
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'Không tìm thấy địa chỉ nào với từ khóa "$_searchQuery"',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
-                            color: Colors.grey,
+                            color: AppColors.accentColor,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -350,10 +378,12 @@ class AddressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 3,
+      elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: AppColors.ultraLightColor, width: 1),
       ),
+      color: Colors.white,
       child: InkWell(
         onTap: onEdit,
         borderRadius: BorderRadius.circular(12),
@@ -368,12 +398,12 @@ class AddressCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
+                      color: AppColors.ultraLightColor,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       Icons.location_on,
-                      color: Colors.red.shade700,
+                      color: AppColors.mainColor,
                       size: 24,
                     ),
                   ),
@@ -384,9 +414,10 @@ class AddressCard extends StatelessWidget {
                       children: [
                         Text(
                           address.addressName,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
+                            color: AppColors.mainColor,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -395,7 +426,7 @@ class AddressCard extends StatelessWidget {
                         Text(
                           'Vĩ độ: ${address.latitude.toStringAsFixed(4)}, Kinh độ: ${address.longitude.toStringAsFixed(4)}',
                           style: TextStyle(
-                            color: Colors.grey.shade700,
+                            color: AppColors.lightColor,
                             fontSize: 13,
                           ),
                         ),
@@ -413,7 +444,7 @@ class AddressCard extends StatelessWidget {
                     icon: const Icon(Icons.edit, size: 18),
                     label: const Text('Sửa'),
                     style: TextButton.styleFrom(
-                      foregroundColor: Colors.blue.shade700,
+                      foregroundColor: AppColors.accentColor,
                     ),
                   ),
                   TextButton.icon(

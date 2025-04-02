@@ -1,3 +1,4 @@
+import 'package:admin_food_app/models/order.dart';
 import 'package:admin_food_app/screens/address/admin_address_screen.dart';
 import 'package:admin_food_app/screens/coupon/admin_coupon_screen.dart';
 import 'package:admin_food_app/screens/order/admin_order_screen.dart';
@@ -29,7 +30,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
   int totalOrders = 0;
   double totalRevenue = 0;
   List<dynamic> topProducts = [];
-  List<dynamic> recentOrders = [];
+  List<OrderProduct> recentOrders = [];
+
+  // Main theme color and complementary palette
+  final Color mainColor = Color(0xFF162F4A);     // Deep blue - primary
+  final Color accentColor = Color(0xFF3A5F82);   // Medium blue - secondary
+  final Color lightColor = Color(0xFF718EA4);    // Light blue - tertiary
+  final Color ultraLightColor = Color(0xFFD0DCE7); // Very light blue - background
 
   // Service instances
   final _userService = AdminAccountService();
@@ -63,17 +70,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
       setState(() {
         topProducts = topProductsData
             .map((product) => {
-                  ...product.toJson(),
-                  'salesCount':
-                      orderAnalyticsProductSales[product.productId] ?? 0
-                })
+          ...product.toJson(),
+          'salesCount':
+          orderAnalyticsProductSales[product.productId] ?? 0
+        })
             .toList();
       });
 
       // Fetch recent orders
       final recentOrdersData = await _orderService.getRecentOrders();
       setState(() {
-        recentOrders = recentOrdersData.map((order) => order.toJson()).toList();
+        recentOrders = recentOrdersData.map((order) => order).toList();
       });
     } catch (e) {
       print('Lỗi khi tải dữ liệu bảng điều khiển: $e');
@@ -94,135 +101,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: Text(
-          'Crunch n Dash',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            shadows: [
-              Shadow(
-                blurRadius: 10.0,
-                color: Colors.black26,
-                offset: Offset(2.0, 2.0),
-              )
-            ],
-          ),
-        ),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.deepPurple[700]!, Colors.deepPurpleAccent[400]!],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        elevation: 6,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout, color: Colors.white),
-            tooltip: 'Đăng xuất',
-            onPressed: () {
-              // Handle logout logic here
-              _handleLogout();
-            },
-          ),
-        ],
-      ),
+      backgroundColor: Colors.grey[50],
+      appBar: _buildAppBar(),
       body: Row(
         children: [
           // Sidebar Navigation
-          Container(
-            width: 280,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.deepPurple[200]!,
-                  Colors.deepPurple[100]!,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 10,
-                  offset: Offset(2, 2),
-                )
-              ],
+          if (MediaQuery.of(context).size.width > 600)
+            _buildSidebar(),
+          // Drawer for mobile
+          if (MediaQuery.of(context).size.width <= 600)
+            Drawer(
+              child: _buildSidebar(),
             ),
-            child: ListView(
-              children: [
-                UserAccountsDrawerHeader(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.deepPurple[500]!,
-                        Colors.deepPurpleAccent[200]!
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  accountName: Text(
-                    'Quản Trị Viên',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  accountEmail: Text(AdminAuthService.currentUser?.email ?? "admin@gmail.com"),
-                  currentAccountPicture: CircleAvatar(
-                    backgroundColor: Colors.white,
-                    child: Icon(
-                      Icons.admin_panel_settings,
-                      color: Colors.deepPurple,
-                      size: 40,
-                    ),
-                  ),
-                ),
-                // _buildNavItem(Icons.dashboard, 'Bảng Điều Khiển', () {}),
-                _buildNavItem(Icons.people, 'Người Dùng', () async {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => AdminUserScreen()));
-                }),
-                _buildNavItem(Icons.shopping_cart, 'Đơn Hàng', () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => AdminOrderScreen()));
-                }),
-                _buildNavItem(Icons.fastfood, 'Sản Phẩm', () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => AdminProductScreen()));
-                }),
-                _buildNavItem(Icons.location_on, 'Địa Chỉ', () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => AddressManagementScreen()));
-                }),
-                _buildNavItem(Icons.discount, 'Mã Giảm Giá', () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => AdminCouponScreen()));
-                }),
-                _buildNavItem(Icons.notifications, 'Thông Báo', () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => UserNotificationManager()));
-                }),
-              ],
-            ),
-          ),
           // Main Dashboard Content
           Expanded(
             child: SingleChildScrollView(
@@ -237,7 +127,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     const SizedBox(height: 20),
 
                     // Charts and Detailed Stats
-                    Row(
+                    MediaQuery.of(context).size.width > 1000
+                        ? Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Top Products Chart
@@ -250,6 +141,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
                           child: _buildRecentOrdersList(),
                         ),
                       ],
+                    )
+                        : Column(
+                      children: [
+                        _buildTopProductsChart(),
+                        const SizedBox(height: 20),
+                        _buildRecentOrdersList(),
+                      ],
                     ),
                   ],
                 ),
@@ -261,50 +159,201 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 
-  Widget _buildNavItem(IconData icon, String title, VoidCallback onTap) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      elevation: 3,
-      child: ListTile(
-        leading: Icon(icon, color: Colors.deepPurple[700], size: 24),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: Colors.deepPurple[800],
-            fontWeight: FontWeight.w600,
+  AppBar _buildAppBar() {
+    return AppBar(
+      backgroundColor: mainColor,
+      title: Row(
+        children: [
+          Icon(Icons.restaurant_menu, size: 28, color: Colors.white),
+          SizedBox(width: 12),
+          Text(
+            'Crunch n Dash',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 22,
+              letterSpacing: 0.5,
+              color: Colors.white,
+            ),
           ),
-        ),
-        onTap: onTap,
-        hoverColor: Colors.deepPurple[50],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        ],
       ),
+      elevation: 4,
+      shadowColor: Colors.black26,
+      actions: [
+        IconButton(
+          icon: Icon(Icons.logout_rounded, color: Colors.white),
+          tooltip: 'Đăng xuất',
+          onPressed: _handleLogout,
+        ),
+        SizedBox(width: 8),
+      ],
     );
   }
 
   Widget _buildQuickStatsRow() {
-    return Row(
+    return Wrap(
+      spacing: 16.0,
+      runSpacing: 16.0,
       children: [
         _buildStatCard(
           title: 'Tổng Người Dùng',
           value: totalUsers.toString(),
           icon: Icons.people,
-          color: Colors.blue[700]!,
+          color: mainColor,
         ),
         _buildStatCard(
           title: 'Tổng Đơn Hàng',
           value: totalOrders.toString(),
           icon: Icons.shopping_cart,
-          color: Colors.green[700]!,
+          color: accentColor,
         ),
         _buildStatCard(
           title: 'Tổng Doanh Thu',
           value: NumberFormat.currency(symbol: 'đ').format(totalRevenue),
           icon: Icons.monetization_on,
-          color: Colors.orange[700]!,
+          color: lightColor,
         ),
       ],
+    );
+  }
+
+  Widget _buildSidebar() {
+    return Container(
+      width: 280,
+      color: Colors.white,
+      child: Column(
+        children: [
+          _buildUserHeader(),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              children: [
+                // _buildNavItem(Icons.dashboard_rounded, 'Bảng Điều Khiển', true, () {}),
+                _buildNavItem(Icons.people_alt_rounded, 'Người Dùng', false, () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => AdminUserScreen()));
+                }),
+                _buildNavItem(Icons.shopping_cart_rounded, 'Đơn Hàng', false, () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => AdminOrderScreen()));
+                }),
+                _buildNavItem(Icons.fastfood_rounded, 'Sản Phẩm', false, () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => AdminProductScreen()));
+                }),
+                _buildNavItem(Icons.location_on_rounded, 'Địa Chỉ', false, () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => AddressManagementScreen()));
+                }),
+                _buildNavItem(Icons.discount_rounded, 'Mã Giảm Giá', false, () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => AdminCouponScreen()));
+                }),
+                _buildNavItem(Icons.notifications_rounded, 'Thông Báo', false, () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => UserNotificationManager()));
+                }),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserHeader() {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      color: mainColor,
+      child: Row(
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                )
+              ],
+            ),
+            child: Icon(
+              Icons.admin_panel_settings,
+              color: mainColor,
+              size: 36,
+            ),
+          ),
+          SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Quản Trị Viên',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  AdminAuthService.currentUser?.email ?? "admin@gmail.com",
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem(IconData icon, String title, bool isActive, VoidCallback onTap) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: isActive ? mainColor : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          hoverColor: isActive ? Colors.white10 : ultraLightColor,
+          splashColor: isActive ? Colors.white24 : lightColor.withOpacity(0.3),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Icon(
+                  icon,
+                  color: isActive ? Colors.white : mainColor,
+                  size: 22,
+                ),
+                SizedBox(width: 12),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: isActive ? Colors.white : mainColor,
+                    fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -314,51 +363,67 @@ class _AdminDashboardState extends State<AdminDashboard> {
     required IconData icon,
     required Color color,
   }) {
-    return Expanded(
+    return SizedBox(
+      width: MediaQuery.of(context).size.width > 1200
+          ? (MediaQuery.of(context).size.width - 340) / 3 - 16
+          : MediaQuery.of(context).size.width > 800
+          ? (MediaQuery.of(context).size.width - 340) / 2 - 16
+          : MediaQuery.of(context).size.width - 340 - 16,
       child: Card(
-        elevation: 6,
-        shadowColor: color.withOpacity(0.5),
+        elevation: 4,
+        shadowColor: color.withOpacity(0.3),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15),
-            gradient: LinearGradient(
-              colors: [color, color.withOpacity(0.7)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: color,
+            borderRadius: BorderRadius.circular(18),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Icon(icon, color: Colors.white, size: 40),
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 36),
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  title == 'Tổng Doanh Thu'
-                      ? Utils.formatCurrency(
-                          double.parse(value.replaceAll(RegExp(r'[^\d.]'), '')))
-                      : value,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          title == 'Tổng Doanh Thu'
+                              ? Utils.formatCurrency(
+                              double.parse(value.replaceAll(RegExp(r'[^\d.]'), '')))
+                              : value,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -371,45 +436,89 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   Widget _buildTopProductsChart() {
     return Card(
-      elevation: 6,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      child: Container(
+        padding: const EdgeInsets.all(20.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+        ),
         child: Column(
           children: [
-            Text(
-              'Sản Phẩm Bán Chạy Nhất',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.deepPurple[800],
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Sản Phẩm Bán Chạy Nhất',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: mainColor,
+                  ),
+                ),
+                Icon(Icons.trending_up, color: mainColor),
+              ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             SizedBox(
               height: 300,
               child: BarChart(
                 BarChartData(
                   barGroups: topProducts.map((product) {
+                    final index = topProducts.indexOf(product);
+                    // Create colors based on index
+                    final colors = [
+                      mainColor,        // Deep blue
+                      accentColor,      // Medium blue
+                      lightColor,       // Light blue
+                      Color(0xFF4A6F8A), // Another blue variant
+                    ];
+                    final colorIndex = index % colors.length;
+
                     return BarChartGroupData(
-                      x: topProducts.indexOf(product),
+                      x: index,
                       barRods: [
                         BarChartRodData(
                           toY: (product['salesCount'] ?? 0).toDouble(),
-                          color: Colors.deepPurple[600],
+                          color: colors[colorIndex],
                           width: 22,
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(8),
+                          backDrawRodData: BackgroundBarChartRodData(
+                            show: true,
+                            toY: topProducts
+                                .map((p) => (p['salesCount'] ?? 0).toDouble())
+                                .reduce((a, b) => a > b ? a : b) * 1.1,
+                            color: Colors.grey.shade200,
+                          ),
                         ),
                       ],
                     );
                   }).toList(),
+                  gridData: FlGridData(
+                    show: true,
+                    drawHorizontalLine: true,
+                    horizontalInterval: 5,
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color: Colors.grey.shade200,
+                      strokeWidth: 1,
+                    ),
+                  ),
                   titlesData: FlTitlesData(
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
                         reservedSize: 40,
+                        getTitlesWidget: (value, meta) {
+                          return Text(
+                            value.toInt().toString(),
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          );
+                        },
                       ),
                     ),
                     bottomTitles: AxisTitles(
@@ -419,19 +528,52 @@ class _AdminDashboardState extends State<AdminDashboard> {
                           final index = value.toInt();
                           return Padding(
                             padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(
-                              index < topProducts.length
-                                  ? topProducts[index]['productName']
-                                  : '',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: Colors.deepPurple,
+                            child: Transform.rotate(
+                              angle: -0.3,
+                              child: SizedBox(
+                                width: 60,
+                                child: Text(
+                                  index < topProducts.length
+                                      ? topProducts[index]['productName']
+                                      : '',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: mainColor,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
                           );
                         },
                       ),
+                    ),
+                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  ),
+                  barTouchData: BarTouchData(
+                    touchTooltipData: BarTouchTooltipData(
+                      tooltipRoundedRadius: 8,
+                      tooltipPadding: EdgeInsets.all(8),
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        final product = topProducts[group.x];
+                        return BarTooltipItem(
+                          '${product['productName']}\n',
+                          TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          children: [
+                            TextSpan(
+                              text: 'Đã bán: ${product['salesCount']}',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -445,53 +587,156 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   Widget _buildRecentOrdersList() {
     return Card(
-      elevation: 6,
+      elevation: 4,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(18),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+      child: Container(
+        padding: const EdgeInsets.all(20.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Đơn Hàng Gần Đây',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.deepPurple[800],
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Đơn Hàng Gần Đây',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: mainColor,
+                  ),
+                ),
+                TextButton.icon(
+                  icon: Icon(Icons.visibility, size: 18),
+                  label: Text('Xem tất cả'),
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => AdminOrderScreen()));
+                  },
+                  style: TextButton.styleFrom(
+                    foregroundColor: mainColor,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (recentOrders.isEmpty)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    children: [
+                      Icon(Icons.receipt_long, size: 48, color: Colors.grey[400]),
+                      SizedBox(height: 16),
+                      Text(
+                        'Chưa có đơn hàng nào',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              ...recentOrders.map((order) => _buildOrderCard(order)).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOrderCard(OrderProduct order) {
+    final statusColors = {
+      'pending': mainColor,           // Deep blue
+      'processing': accentColor,      // Medium blue
+      'completed': lightColor,        // Light blue
+      'cancelled': Color(0xFF4A6F8A), // Another blue variant
+    };
+    final status = _orderService.getStatusText(order.status);
+    final statusColor = statusColors[status] ?? Colors.grey;
+
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: ultraLightColor,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Center(
+                child: Icon(Icons.shopping_bag_outlined, color: mainColor),
               ),
             ),
-            const SizedBox(height: 10),
-            ...recentOrders
-                .map((order) => Card(
-                      elevation: 3,
-                      margin: const EdgeInsets.symmetric(vertical: 5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        title: Text(
-                          'Đơn Hàng #${order['orderId']}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.deepPurple[700],
-                          ),
-                        ),
-                        subtitle: Text(
-                          'Tổng: ${Utils.formatCurrency(order['totalPrice'])}',
-                          style: TextStyle(color: Colors.green[700]),
-                        ),
-                        trailing: Text(
-                          DateFormat('dd/MM/yyyy HH:mm').format(
-                              (order['createdAt'] as Timestamp).toDate()),
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                      ),
-                    ))
-                .toList(),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Đơn Hàng #${order.orderId}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: mainColor,
+                      fontSize: 16,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Khách hàng: ${order.nameCustomer ?? 'Không có tên'}',
+                    style: TextStyle(color: Colors.grey[700], fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  Utils.formatCurrency(order.totalPrice),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: mainColor,
+                    fontSize: 16,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  DateFormat('dd/MM/yyyy').format(
+                      order.createdAt),
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+              ],
+            ),
+            SizedBox(width: 12),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: statusColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: statusColor, width: 1),
+              ),
+              child: Text(
+                status.toUpperCase(),
+                style: TextStyle(
+                  color: statusColor,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ],
         ),
       ),

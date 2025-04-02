@@ -21,6 +21,12 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
   List<Coupon> _filteredCoupons = [];
   bool _isLoading = true;
 
+  // Colors
+  final Color mainColor = Color(0xFF162F4A); // Deep blue - primary
+  final Color accentColor = Color(0xFF3A5F82); // Medium blue - secondary
+  final Color lightColor = Color(0xFF718EA4); // Light blue - tertiary
+  final Color ultraLightColor = Color(0xFFD0DCE7); // Very light blue - background
+
   // Tab controller for order/shipping tabs
   late TabController _tabController;
 
@@ -125,7 +131,7 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: ultraLightColor.withOpacity(0.5),
       appBar: AppBar(
         title: Text(
           'Quản Lý Mã Giảm Giá',
@@ -138,9 +144,9 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
         centerTitle: true,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Icon(CupertinoIcons.back, color: Colors.white, size: 32),
+          icon: Icon(CupertinoIcons.back, color: Colors.white, size: 28),
         ),
-        backgroundColor: Colors.teal[600],
+        backgroundColor: mainColor,
         elevation: 0,
         actions: [
           Container(
@@ -156,7 +162,7 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal[400],
+                backgroundColor: accentColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -176,6 +182,7 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white.withOpacity(0.7),
           indicatorColor: Colors.white,
+          labelStyle: TextStyle(fontWeight: FontWeight.bold),
           tabs: [
             Tab(text: 'Tất Cả'),
             Tab(text: 'Đơn Hàng'),
@@ -186,7 +193,7 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
       body: _isLoading
           ? Center(
         child: CircularProgressIndicator(
-          color: Colors.teal[600],
+          color: accentColor,
         ),
       )
           : Column(
@@ -213,13 +220,25 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
             controller: _searchController,
             decoration: InputDecoration(
               hintText: 'Tìm kiếm mã giảm giá...',
-              prefixIcon: Icon(Icons.search),
+              hintStyle: TextStyle(color: lightColor),
+              prefixIcon: Icon(Icons.search, color: accentColor),
+              filled: true,
+              fillColor: ultraLightColor.withOpacity(0.5),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.grey.shade300),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: accentColor, width: 1),
               ),
               contentPadding: EdgeInsets.symmetric(vertical: 0),
             ),
+            style: TextStyle(color: mainColor),
             onChanged: (value) {
               setState(() {
                 _searchQuery = value;
@@ -237,27 +256,43 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
               Expanded(
                 child: Row(
                   children: [
-                    Text('Hiển thị: '),
+                    Text(
+                      'Hiển thị: ',
+                      style: TextStyle(
+                        color: mainColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                     SizedBox(width: 8),
-                    DropdownButton<bool>(
-                      value: _showActiveOnly,
-                      underline: Container(),
-                      items: [
-                        DropdownMenuItem(
-                          value: true,
-                          child: Text('Còn hiệu lực'),
-                        ),
-                        DropdownMenuItem(
-                          value: false,
-                          child: Text('Tất cả'),
-                        ),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          _showActiveOnly = value!;
-                          _updateFilters();
-                        });
-                      },
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: ultraLightColor.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: DropdownButton<bool>(
+                        value: _showActiveOnly,
+                        underline: Container(),
+                        icon: Icon(Icons.keyboard_arrow_down, color: accentColor),
+                        style: TextStyle(color: mainColor),
+                        dropdownColor: Colors.white,
+                        items: [
+                          DropdownMenuItem(
+                            value: true,
+                            child: Text('Còn hiệu lực'),
+                          ),
+                          DropdownMenuItem(
+                            value: false,
+                            child: Text('Tất cả'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            _showActiveOnly = value!;
+                            _updateFilters();
+                          });
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -267,35 +302,51 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
               Expanded(
                 child: Row(
                   children: [
-                    Text('Sắp xếp: '),
+                    Text(
+                      'Sắp xếp: ',
+                      style: TextStyle(
+                        color: mainColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                     SizedBox(width: 8),
-                    DropdownButton<String>(
-                      value: _sortOption,
-                      underline: Container(),
-                      items: [
-                        DropdownMenuItem(
-                          value: 'expiredDate',
-                          child: Text('Ngày hết hạn'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'name',
-                          child: Text('Tên mã'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'discountValue',
-                          child: Text('Giá trị'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'minPurchaseAmount',
-                          child: Text('Giá trị đơn tối thiểu'),
-                        ),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          _sortOption = value!;
-                          _updateFilters();
-                        });
-                      },
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: ultraLightColor.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: DropdownButton<String>(
+                        value: _sortOption,
+                        underline: Container(),
+                        icon: Icon(Icons.keyboard_arrow_down, color: accentColor),
+                        style: TextStyle(color: mainColor),
+                        dropdownColor: Colors.white,
+                        items: [
+                          DropdownMenuItem(
+                            value: 'expiredDate',
+                            child: Text('Ngày hết hạn'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'name',
+                            child: Text('Tên mã'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'discountValue',
+                            child: Text('Giá trị'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'minPurchaseAmount',
+                            child: Text('Giá trị đơn tối thiểu'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            _sortOption = value!;
+                            _updateFilters();
+                          });
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -305,13 +356,13 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
 
           // Results count
           Padding(
-            padding: const EdgeInsets.only(top: 8.0),
+            padding: const EdgeInsets.only(top: 12.0),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 'Hiển thị ${_filteredCoupons.length} mã giảm giá',
                 style: TextStyle(
-                  color: Colors.grey[600],
+                  color: lightColor,
                   fontStyle: FontStyle.italic,
                 ),
               ),
@@ -330,14 +381,14 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
           Icon(
             Icons.local_offer_outlined,
             size: 100,
-            color: Colors.grey[400],
+            color: lightColor,
           ),
           const SizedBox(height: 20),
           Text(
             'Không Tìm Thấy Mã Giảm Giá',
             style: TextStyle(
               fontSize: 24,
-              color: Colors.grey[600],
+              color: mainColor,
               fontWeight: FontWeight.w300,
             ),
           ),
@@ -347,14 +398,14 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
             'Thử thay đổi bộ lọc tìm kiếm',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[500],
+              color: accentColor,
             ),
           )
               : Text(
             'Bắt đầu bằng việc thêm mã giảm giá đầu tiên',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[500],
+              color: accentColor,
             ),
           ),
           const SizedBox(height: 20),
@@ -363,7 +414,12 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
               icon: Icon(Icons.refresh),
               label: Text('Xóa bộ lọc'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal[400],
+                backgroundColor: accentColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               ),
               onPressed: () {
                 setState(() {
@@ -409,9 +465,9 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
-                spreadRadius: 2,
-                blurRadius: 5,
+                color: mainColor.withOpacity(0.1),
+                spreadRadius: 1,
+                blurRadius: 8,
                 offset: const Offset(0, 3),
               ),
             ],
@@ -423,7 +479,7 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
               Stack(
                 children: [
                   ClipRRect(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                     child: CachedNetworkImage(
                       imageUrl: coupon.couponImageUrl,
                       height: constraints.maxWidth * 0.6,
@@ -431,10 +487,16 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
                       fit: BoxFit.fitHeight,
                       placeholder: (context, url) => Center(
                         child: CircularProgressIndicator(
-                          color: Colors.teal[300],
+                          color: accentColor,
                         ),
                       ),
-                      errorWidget: (context, url, error) => Icon(Icons.error),
+                      errorWidget: (context, url, error) => Container(
+                        height: constraints.maxWidth * 0.6,
+                        color: ultraLightColor,
+                        child: Center(
+                          child: Icon(Icons.image_not_supported, color: lightColor, size: 48),
+                        ),
+                      ),
                     ),
                   ),
                   if (isExpired)
@@ -452,6 +514,7 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
+                            fontSize: 12,
                           ),
                         ),
                       ),
@@ -484,7 +547,7 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
               // Coupon Details
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(12.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -497,7 +560,7 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: isExpired ? Colors.grey[600] : Colors.teal[700],
+                              color: isExpired ? lightColor : mainColor,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -505,51 +568,87 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
                           const SizedBox(height: 8),
 
                           // Discount Details
-                          Text(
-                            coupon.isPercentage
-                                ? 'Giảm ${coupon.discountValue.toStringAsFixed(0)}%'
-                                : 'Giảm ${Utils.formatCurrency(coupon.discountValue)}',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: isExpired ? Colors.grey[500] : Colors.green[700],
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: isExpired ? Colors.grey[200] : ultraLightColor,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              coupon.isPercentage
+                                  ? 'Giảm ${coupon.discountValue.toStringAsFixed(0)}%'
+                                  : 'Giảm ${Utils.formatCurrency(coupon.discountValue)}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: isExpired ? Colors.grey[500] : accentColor,
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 8),
 
                           // Additional Coupon Details
-                          Text(
-                            'Hạn đến: ${dateFormat.format(coupon.expiredDate)}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isExpired ? Colors.grey[500] : Colors.grey[700],
-                            ),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.calendar_today_outlined,
+                                size: 14,
+                                color: isExpired ? Colors.grey[400] : lightColor,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'Hạn đến: ${dateFormat.format(coupon.expiredDate)}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isExpired ? Colors.grey[500] : lightColor,
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            'Đơn tối thiểu: ${Utils.formatCurrency(coupon.minPurchaseAmount)}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isExpired ? Colors.grey[500] : Colors.grey[700],
-                            ),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.shopping_bag_outlined,
+                                size: 14,
+                                color: isExpired ? Colors.grey[400] : lightColor,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'Đơn tối thiểu: ${Utils.formatCurrency(coupon.minPurchaseAmount)}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isExpired ? Colors.grey[500] : lightColor,
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 4),
 
                           // Max Discount (if applicable)
                           if (coupon.maxDiscountValue != null)
-                            Text(
-                              'Giảm tối đa: ${Utils.formatCurrency(coupon.maxDiscountValue!)}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: isExpired ? Colors.grey[500] : Colors.grey[700],
-                              ),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.money_off_outlined,
+                                  size: 14,
+                                  color: isExpired ? Colors.grey[400] : lightColor,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Giảm tối đa: ${Utils.formatCurrency(coupon.maxDiscountValue!)}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isExpired ? Colors.grey[500] : lightColor,
+                                  ),
+                                ),
+                              ],
                             ),
                         ],
                       ),
 
                       // Action Buttons
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
                             child: ElevatedButton(
@@ -563,34 +662,47 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
                                 ).then((_) => _fetchCoupons());
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: isExpired ? Colors.grey[300] : Colors.teal[100],
+                                backgroundColor: isExpired ? Colors.grey[200] : ultraLightColor,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 8,
-                                  vertical: 6,
+                                  vertical: 10,
                                 ),
+                                elevation: 0,
                               ),
                               child: Text(
                                 'Chỉnh Sửa',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: isExpired ? Colors.grey[600] : Colors.teal[700],
+                                  color: isExpired ? Colors.grey[600] : mainColor,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                           ),
-                          IconButton(
-                            icon: Icon(
-                              Icons.delete_outline,
-                              color: isExpired ? Colors.grey[400] : Colors.red[400],
-                              size: 20,
+                          SizedBox(width: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isExpired ? Colors.grey[200] : Colors.red[50],
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            onPressed: () {
-                              _showDeleteConfirmation(coupon.couponId);
-                            },
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.delete_outline,
+                                color: isExpired ? Colors.grey[400] : Colors.red[400],
+                                size: 20,
+                              ),
+                              onPressed: () {
+                                _showDeleteConfirmation(coupon.couponId);
+                              },
+                              constraints: BoxConstraints.tightFor(
+                                width: 40,
+                                height: 36,
+                              ),
+                              padding: EdgeInsets.zero,
+                            ),
                           ),
                         ],
                       ),
@@ -609,22 +721,26 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         title: Text(
           'Xóa Mã Giảm Giá',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.teal[700],
+            color: mainColor,
           ),
         ),
         content: Text(
           'Bạn có chắc chắn muốn xóa mã giảm giá này không?',
+          style: TextStyle(color: accentColor),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
               'Hủy',
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: lightColor),
             ),
           ),
           ElevatedButton(
@@ -634,6 +750,9 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> with SingleTicker
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red[400],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             child: Text(
               'Xóa',

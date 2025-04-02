@@ -23,6 +23,12 @@ class EditUserScreen extends StatefulWidget {
 }
 
 class _EditUserScreenState extends State<EditUserScreen> {
+  // Color scheme
+  final Color mainColor = const Color(0xFF162F4A); // Deep blue - primary
+  final Color accentColor = const Color(0xFF3A5F82); // Medium blue - secondary
+  final Color lightColor = const Color(0xFF718EA4); // Light blue - tertiary
+  final Color ultraLightColor = const Color(0xFFD0DCE7); // Very light blue - background
+
   final AdminAccountService _adminAccountService = AdminAccountService();
   final _couponService = CouponService();
   final _formKey = GlobalKey<FormState>();
@@ -176,10 +182,14 @@ class _EditUserScreenState extends State<EditUserScreen> {
   void _showSuccessSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(
+          message,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(16),
       ),
     );
   }
@@ -187,10 +197,14 @@ class _EditUserScreenState extends State<EditUserScreen> {
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(
+          message,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(16),
       ),
     );
   }
@@ -198,56 +212,67 @@ class _EditUserScreenState extends State<EditUserScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: ultraLightColor.withOpacity(0.3),
       appBar: AppBar(
         title: Text(
           widget.isNewUser ? 'Thêm Người Dùng Mới' : 'Chỉnh Sửa Người Dùng',
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            fontSize: 20,
+          ),
         ),
         centerTitle: true,
+        backgroundColor: mainColor,
         elevation: 0,
-        leading: IconButton(onPressed: () => Navigator.pop(context), icon: Icon(CupertinoIcons.back, size: 32,)),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(CupertinoIcons.back, size: 28, color: Colors.white),
+        ),
         actions: [
           if (!widget.isNewUser)
             IconButton(
-              icon: const Icon(Icons.refresh),
+              icon: const Icon(Icons.refresh, color: Colors.white),
               onPressed: _loadData,
               tooltip: 'Làm mới',
             ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator(color: mainColor))
           : SingleChildScrollView(
         child: Column(
           children: [
             _buildUserInfoForm(),
             const SizedBox(height: 16),
             _buildCouponSection(),
+            const SizedBox(height: 100), // Extra space for bottom button
           ],
         ),
       ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        width: double.infinity,
         child: ElevatedButton(
           onPressed: _isLoading ? null : _saveUser,
           style: ElevatedButton.styleFrom(
+            backgroundColor: mainColor,
+            foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
           child: _isLoading
-              ? const CircularProgressIndicator(color: Colors.white)
+              ? const SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 3,
+              )
+          )
               : Text(
             widget.isNewUser ? 'Tạo Người Dùng' : 'Lưu Thay Đổi',
             style: const TextStyle(
@@ -263,14 +288,14 @@ class _EditUserScreenState extends State<EditUserScreen> {
   Widget _buildUserInfoForm() {
     return Container(
       margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: mainColor.withOpacity(0.08),
+            blurRadius: 12,
             offset: const Offset(0, 5),
           ),
         ],
@@ -280,23 +305,47 @@ class _EditUserScreenState extends State<EditUserScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Thông Tin Cá Nhân',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                Icon(Icons.person_outline, color: mainColor, size: 22),
+                const SizedBox(width: 8),
+                Text(
+                  'Thông Tin Cá Nhân',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: mainColor,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             TextFormField(
               controller: _nameController,
               decoration: InputDecoration(
                 labelText: 'Tên người dùng',
+                labelStyle: TextStyle(color: accentColor),
                 hintText: 'Nhập tên người dùng',
-                prefixIcon: const Icon(Icons.person),
-                border: OutlineInputBorder(
+                hintStyle: TextStyle(color: lightColor.withOpacity(0.7)),
+                prefixIcon: Icon(Icons.person, color: accentColor),
+                enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: ultraLightColor),
                 ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: mainColor, width: 2),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Colors.red),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Colors.red, width: 2),
+                ),
+                filled: true,
+                fillColor: Colors.white,
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -310,11 +359,28 @@ class _EditUserScreenState extends State<EditUserScreen> {
               controller: _phoneController,
               decoration: InputDecoration(
                 labelText: 'Số điện thoại',
+                labelStyle: TextStyle(color: accentColor),
                 hintText: 'Nhập số điện thoại',
-                prefixIcon: const Icon(Icons.phone),
-                border: OutlineInputBorder(
+                hintStyle: TextStyle(color: lightColor.withOpacity(0.7)),
+                prefixIcon: Icon(Icons.phone, color: accentColor),
+                enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: ultraLightColor),
                 ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: mainColor, width: 2),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Colors.red),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Colors.red, width: 2),
+                ),
+                filled: true,
+                fillColor: Colors.white,
               ),
               keyboardType: TextInputType.phone,
               validator: (value) {
@@ -330,36 +396,51 @@ class _EditUserScreenState extends State<EditUserScreen> {
               },
             ),
             if (!widget.isNewUser && _userInfo != null) ...[
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  const Icon(Icons.update, size: 16, color: Colors.grey),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Cập nhật lần cuối: ${DateFormat('dd/MM/yyyy - HH:mm').format(_userInfo!.updatedAt)}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: ultraLightColor.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: ultraLightColor),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.update, size: 16, color: accentColor),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Cập nhật lần cuối: ${DateFormat('dd/MM/yyyy - HH:mm').format(_userInfo!.updatedAt)}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: accentColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(Icons.perm_identity, size: 16, color: Colors.grey),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'ID: ${_userInfo!.userId}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.perm_identity, size: 16, color: accentColor),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'ID: ${_userInfo!.userId}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: accentColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ],
@@ -371,14 +452,14 @@ class _EditUserScreenState extends State<EditUserScreen> {
   Widget _buildCouponSection() {
     return Container(
       margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: mainColor.withOpacity(0.08),
+            blurRadius: 12,
             offset: const Offset(0, 5),
           ),
         ],
@@ -387,59 +468,84 @@ class _EditUserScreenState extends State<EditUserScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Icon(Icons.card_giftcard, color: mainColor, size: 22),
+              const SizedBox(width: 8),
+              Text(
                 'Coupon',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
+                  color: mainColor,
                 ),
               ),
-              Text(
-                'Số lượng: ${_selectedCouponIds.length}',
-                style: TextStyle(
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.bold,
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: mainColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'Số lượng: ${_selectedCouponIds.length}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           _isLoadingCoupons
-              ? const Center(
+              ? Center(
             child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: CircularProgressIndicator(),
+              padding: const EdgeInsets.all(20.0),
+              child: CircularProgressIndicator(color: mainColor),
             ),
           )
               : _allCoupons.isEmpty
               ? Center(
             child: Column(
               children: [
-                Icon(Icons.card_giftcard, size: 48, color: Colors.grey[400]),
+                const SizedBox(height: 16),
+                Icon(Icons.card_giftcard, size: 60, color: lightColor.withOpacity(0.5)),
                 const SizedBox(height: 16),
                 Text(
                   'Người dùng này không có coupon nào',
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: TextStyle(
+                    color: lightColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
+                const SizedBox(height: 16),
               ],
             ),
           )
               : Column(
             children: [
-              const Text(
-                'Coupon của người dùng',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: ultraLightColor.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Coupon của người dùng',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: accentColor,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               ..._allCoupons.asMap().entries.map((entry) {
                 final index = entry.key;
                 final coupon = entry.value;
-                // Include the index in the key to make sure each tile is unique in the widget tree
                 return _buildCouponTile(coupon, readOnly: true, key: '$index-${coupon.couponId}');
               }).toList(),
             ],
@@ -454,13 +560,14 @@ class _EditUserScreenState extends State<EditUserScreen> {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.grey[100],
+          color: ultraLightColor.withOpacity(0.3),
           borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: ultraLightColor),
         ),
-        child: const Center(
+        child: Center(
           child: Text(
             'Chưa chọn coupon nào',
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: lightColor, fontWeight: FontWeight.w500),
           ),
         ),
       );
@@ -469,22 +576,21 @@ class _EditUserScreenState extends State<EditUserScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Coupon đã chọn',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            color: accentColor,
           ),
         ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.green.withOpacity(0.1),
+            color: ultraLightColor.withOpacity(0.3),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: Colors.green.withOpacity(0.3),
-            ),
+            border: Border.all(color: ultraLightColor),
           ),
           child: Wrap(
             spacing: 8,
@@ -493,15 +599,19 @@ class _EditUserScreenState extends State<EditUserScreen> {
               return Chip(
                 label: Text(
                   coupon.couponName,
-                  style: const TextStyle(fontSize: 12),
+                  style: TextStyle(fontSize: 12, color: mainColor, fontWeight: FontWeight.w500),
                 ),
                 backgroundColor: Colors.white,
-                deleteIcon: const Icon(Icons.close, size: 16),
+                deleteIcon: Icon(Icons.close, size: 16, color: accentColor),
                 onDeleted: () => _toggleCouponSelection(coupon),
                 avatar: Icon(
                   coupon.type == CouponType.order ? Icons.shopping_bag : Icons.local_shipping,
                   size: 16,
-                  color: Theme.of(context).primaryColor,
+                  color: mainColor,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: BorderSide(color: mainColor.withOpacity(0.3)),
                 ),
               );
             }).toList(),
@@ -517,27 +627,28 @@ class _EditUserScreenState extends State<EditUserScreen> {
 
     return Card(
       key: key != null ? ValueKey(key) : null,
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 10),
+      elevation: 1,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         side: isSelected
-            ? BorderSide(color: Theme.of(context).primaryColor, width: 2)
-            : BorderSide.none,
+            ? BorderSide(color: mainColor, width: 2)
+            : BorderSide(color: ultraLightColor, width: 1),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
-          vertical: 8,
+          vertical: 12,
         ),
         leading: CircleAvatar(
           backgroundColor: isSelected
-              ? Theme.of(context).primaryColor
-              : (isExpired ? Colors.grey : Colors.blue).withOpacity(0.2),
+              ? mainColor
+              : (isExpired ? Colors.grey : accentColor).withOpacity(0.2),
           child: Icon(
             coupon.type == CouponType.order ? Icons.shopping_bag : Icons.local_shipping,
             color: isSelected
                 ? Colors.white
-                : (isExpired ? Colors.grey : Colors.blue),
+                : (isExpired ? Colors.grey : accentColor),
           ),
         ),
         title: Row(
@@ -547,30 +658,37 @@ class _EditUserScreenState extends State<EditUserScreen> {
                 coupon.couponName,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: isExpired ? Colors.grey : null,
+                  color: isExpired ? Colors.grey : mainColor,
                   decoration: isExpired ? TextDecoration.lineThrough : null,
                 ),
               ),
             ),
             Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 2,
+                horizontal: 10,
+                vertical: 4,
               ),
               decoration: BoxDecoration(
                 color: (isExpired
                     ? Colors.grey
-                    : (coupon.type == CouponType.order ? Colors.orange : Colors.blue))
+                    : (coupon.type == CouponType.order ? Colors.orange : accentColor))
                     .withOpacity(0.2),
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: (isExpired
+                      ? Colors.grey
+                      : (coupon.type == CouponType.order ? Colors.orange : accentColor))
+                      .withOpacity(0.5),
+                  width: 1,
+                ),
               ),
               child: Text(
                 coupon.type == CouponType.order ? 'Đơn hàng' : 'Vận chuyển',
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 11,
                   color: isExpired
                       ? Colors.grey
-                      : (coupon.type == CouponType.order ? Colors.orange : Colors.blue),
+                      : (coupon.type == CouponType.order ? Colors.orange : accentColor),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -580,44 +698,78 @@ class _EditUserScreenState extends State<EditUserScreen> {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 4),
-            Text(
-              coupon.isPercentage
-                  ? 'Giảm ${coupon.discountValue.toStringAsFixed(0)}%${coupon.maxDiscountValue != null ? ' (tối đa ${NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0).format(coupon.maxDiscountValue)})' : ''}'
-                  : 'Giảm ${NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0).format(coupon.discountValue)}',
-              style: TextStyle(
-                color: isExpired ? Colors.grey : Colors.green,
-                fontWeight: FontWeight.bold,
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: isExpired ? Colors.grey.withOpacity(0.1) : Colors.green.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                coupon.isPercentage
+                    ? 'Giảm ${coupon.discountValue.toStringAsFixed(0)}%${coupon.maxDiscountValue != null ? ' (tối đa ${NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0).format(coupon.maxDiscountValue)})' : ''}'
+                    : 'Giảm ${NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0).format(coupon.discountValue)}',
+                style: TextStyle(
+                  color: isExpired ? Colors.grey : Colors.green,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             Row(
               children: [
-                Icon(
-                  Icons.calendar_today,
-                  size: 12,
-                  color: isExpired ? Colors.red : Colors.grey,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  'HSD: ${DateFormat('dd/MM/yyyy').format(coupon.expiredDate)}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isExpired ? Colors.red : Colors.grey[600],
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: isExpired ? Colors.red.withOpacity(0.1) : ultraLightColor,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.calendar_today,
+                        size: 12,
+                        color: isExpired ? Colors.red : lightColor,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'HSD: ${DateFormat('dd/MM/yyyy').format(coupon.expiredDate)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isExpired ? Colors.red : lightColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 8),
-                Icon(
-                  Icons.monetization_on,
-                  size: 12,
-                  color: Colors.grey,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  'Tối thiểu: ${NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0).format(coupon.minPurchaseAmount)}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: ultraLightColor,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.monetization_on,
+                        size: 12,
+                        color: lightColor,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Tối thiểu: ${NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0).format(coupon.minPurchaseAmount)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: lightColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -632,7 +784,10 @@ class _EditUserScreenState extends State<EditUserScreen> {
               : (bool? value) {
             _toggleCouponSelection(coupon);
           },
-          activeColor: Theme.of(context).primaryColor,
+          activeColor: mainColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+          ),
         ),
         // Only make tappable if not in read-only mode
         onTap: readOnly || isExpired

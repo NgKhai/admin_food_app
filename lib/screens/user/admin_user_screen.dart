@@ -24,6 +24,12 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
   String _filterOption = 'Tất cả';
   SortOrder _sortOrder = SortOrder.none;
 
+  // Color palette
+  final Color mainColor = const Color(0xFF162F4A); // Deep blue - primary
+  final Color accentColor = const Color(0xFF3A5F82); // Medium blue - secondary
+  final Color lightColor = const Color(0xFF718EA4); // Light blue - tertiary
+  final Color ultraLightColor = const Color(0xFFD0DCE7); // Very light blue - background
+
   @override
   void initState() {
     super.initState();
@@ -99,7 +105,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.green,
+        backgroundColor: accentColor,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
@@ -120,16 +126,20 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: ultraLightColor,
       appBar: AppBar(
         title: const Text(
           'Quản lý Người dùng',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        elevation: 2,
-        backgroundColor: Theme.of(context).primaryColor,
+        elevation: 0,
+        backgroundColor: mainColor,
         foregroundColor: Colors.white,
-        leading: IconButton(onPressed: () => Navigator.pop(context), icon: Icon(CupertinoIcons.back, color: Colors.white, size: 32,)),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: Icon(CupertinoIcons.back, color: Colors.white, size: 28),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -138,79 +148,40 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.grey[50]!,
-              Colors.grey[100]!,
-            ],
+      body: Column(
+        children: [
+          _buildSearchAndFilterSection(),
+          const SizedBox(height: 12),
+          _buildUserStats(),
+          const SizedBox(height: 12),
+          Expanded(
+            child: _isLoading
+                ? Center(child: CircularProgressIndicator(color: mainColor))
+                : _filteredUsers.isEmpty
+                ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.person_off, size: 64, color: lightColor),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Không tìm thấy người dùng nào',
+                    style: TextStyle(fontSize: 16, color: accentColor),
+                  ),
+                ],
+              ),
+            )
+                : _buildUserList(),
           ),
-        ),
-        child: Column(
-          children: [
-            _buildSearchAndFilterSection(),
-            const SizedBox(height: 8),
-            _buildUserStats(),
-            const SizedBox(height: 8),
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _filteredUsers.isEmpty
-                  ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.person_off, size: 64, color: Colors.grey[400]),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Không tìm thấy người dùng nào',
-                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
-              )
-                  : _buildUserList(),
-            ),
-          ],
-        ),
+        ],
       ),
-      // floatingActionButton: FloatingActionButton.extended(
-      //   onPressed: () async {
-      //     final result = await Navigator.push(
-      //       context,
-      //       MaterialPageRoute(
-      //         builder: (context) => EditUserScreen(isNewUser: true),
-      //       ),
-      //     );
-      //     if (result == true) {
-      //       _loadUsers();
-      //     }
-      //   },
-      //   icon: const Icon(Icons.add),
-      //   label: const Text('Thêm người dùng'),
-      //   backgroundColor: Theme.of(context).primaryColor,
-      //   foregroundColor: Colors.white,
-      //   elevation: 4,
-      // ),
     );
   }
 
   Widget _buildSearchAndFilterSection() {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
+      color: Colors.white,
       child: Column(
         children: [
           TextField(
@@ -220,20 +191,26 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
             },
             decoration: InputDecoration(
               hintText: 'Tìm kiếm người dùng...',
-              prefixIcon: const Icon(Icons.search),
+              hintStyle: TextStyle(color: lightColor),
+              prefixIcon: Icon(Icons.search, color: mainColor),
               filled: true,
-              fillColor: Colors.grey[100],
+              fillColor: ultraLightColor,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide.none,
               ),
               contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: mainColor, width: 1),
+              ),
             ),
+            cursorColor: mainColor,
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              const Text('Lọc:', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Lọc:', style: TextStyle(fontWeight: FontWeight.bold, color: mainColor)),
               const SizedBox(width: 8),
               _buildFilterChip('Tất cả'),
               const SizedBox(width: 8),
@@ -245,7 +222,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
           const SizedBox(height: 12),
           Row(
             children: [
-              const Text('Sắp xếp:', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Sắp xếp:', style: TextStyle(fontWeight: FontWeight.bold, color: mainColor)),
               const SizedBox(width: 8),
               _buildSortButton(
                 label: 'A → Z',
@@ -267,10 +244,10 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                       _applyFilters();
                     });
                   },
-                  icon: const Icon(Icons.close, size: 18),
-                  label: const Text('Xoá sắp xếp'),
+                  icon: Icon(Icons.close, size: 18, color: lightColor),
+                  label: Text('Xoá sắp xếp', style: TextStyle(color: lightColor)),
                   style: TextButton.styleFrom(
-                    backgroundColor: Colors.grey[200],
+                    backgroundColor: ultraLightColor,
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -288,25 +265,29 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
     final isSelected = _filterOption == label;
     return FilterChip(
       selected: isSelected,
-      label: Text(label),
+      label: Text(label, style: TextStyle(
+        color: isSelected ? Colors.white : accentColor,
+      )),
       onSelected: (selected) {
         setState(() {
           _filterOption = label;
           _applyFilters();
         });
       },
-      selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-      checkmarkColor: Theme.of(context).primaryColor,
+      selectedColor: mainColor,
+      backgroundColor: ultraLightColor,
+      checkmarkColor: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-          color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
+          color: isSelected ? mainColor : lightColor,
+          width: 1,
         ),
       ),
       showCheckmark: true,
-      avatar: isSelected ? Icon(
+      avatar: isSelected ? const Icon(
         Icons.check_circle,
-        color: Theme.of(context).primaryColor,
+        color: Colors.white,
         size: 16,
       ) : null,
     );
@@ -328,18 +309,18 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
       icon: Icon(
         icon,
         size: 16,
-        color: isSelected ? Colors.white : Theme.of(context).primaryColor,
+        color: isSelected ? Colors.white : mainColor,
       ),
       label: Text(
         label,
         style: TextStyle(
-          color: isSelected ? Colors.white : Theme.of(context).primaryColor,
+          color: isSelected ? Colors.white : mainColor,
         ),
       ),
       style: OutlinedButton.styleFrom(
-        backgroundColor: isSelected ? Theme.of(context).primaryColor : Colors.white,
+        backgroundColor: isSelected ? mainColor : Colors.white,
         side: BorderSide(
-          color: Theme.of(context).primaryColor,
+          color: mainColor,
           width: 1,
         ),
         shape: RoundedRectangleBorder(
@@ -357,7 +338,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
@@ -368,14 +349,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
               offset: const Offset(0, 2),
             ),
           ],
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Theme.of(context).primaryColor.withOpacity(0.05),
-              Theme.of(context).primaryColor.withOpacity(0.15),
-            ],
-          ),
+          border: Border.all(color: ultraLightColor, width: 1),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -384,29 +358,29 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
               label: 'Tổng người dùng',
               value: totalUsers.toString(),
               icon: Icons.people,
-              color: Colors.blue,
+              color: mainColor,
             ),
             Container(
               height: 40,
               width: 1,
-              color: Colors.grey[300],
+              color: ultraLightColor,
             ),
             _buildStatItem(
               label: 'Có coupon',
               value: usersWithCoupons.toString(),
               icon: Icons.card_giftcard,
-              color: Colors.green,
+              color: accentColor,
             ),
             Container(
               height: 40,
               width: 1,
-              color: Colors.grey[300],
+              color: ultraLightColor,
             ),
             _buildStatItem(
               label: 'Không có coupon',
               value: (totalUsers - usersWithCoupons).toString(),
               icon: Icons.card_membership,
-              color: Colors.orange,
+              color: lightColor,
             ),
           ],
         ),
@@ -423,9 +397,9 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
+            color: ultraLightColor,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, color: color, size: 24),
@@ -442,7 +416,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.grey[600],
+            color: accentColor,
             fontSize: 12,
           ),
         ),
@@ -457,245 +431,181 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
       itemBuilder: (context, index) {
         final user = _filteredUsers[index];
         return Card(
-          elevation: 2,
+          elevation: 1,
           margin: const EdgeInsets.only(bottom: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
+            side: BorderSide(color: ultraLightColor, width: 1),
           ),
-          child: Ink(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white,
-                  user.couponIds.isNotEmpty
-                      ? Colors.green.withOpacity(0.05)
-                      : Colors.blue.withOpacity(0.05),
-                ],
-              ),
-            ),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(10),
-              onTap: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EditUserScreen(
-                      isNewUser: false,
-                      userId: user.userId,
-                    ),
+          color: Colors.white,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditUserScreen(
+                    isNewUser: false,
+                    userId: user.userId,
                   ),
-                );
-                if (result == true) {
-                  _loadUsers();
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Stack(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: user.couponIds.isNotEmpty
-                                  ? Colors.green.withOpacity(0.2)
-                                  : Theme.of(context).primaryColor.withOpacity(0.2),
-                              radius: 24,
-                              child: Text(
-                                user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
-                                style: TextStyle(
-                                  color: user.couponIds.isNotEmpty
-                                      ? Colors.green
-                                      : Theme.of(context).primaryColor,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
+                ),
+              );
+              if (result == true) {
+                _loadUsers();
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Stack(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: user.couponIds.isNotEmpty
+                                ? accentColor
+                                : mainColor,
+                            radius: 24,
+                            child: Text(
+                              user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ),
+                          if (user.couponIds.isNotEmpty)
+                            Positioned(
+                              right: 0,
+                              bottom: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border.all(color: Colors.white, width: 2),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  Icons.confirmation_number,
+                                  size: 14,
+                                  color: accentColor,
                                 ),
                               ),
                             ),
-                            if (user.couponIds.isNotEmpty)
-                              Positioned(
-                                right: 0,
-                                bottom: 0,
-                                child: Container(
-                                  padding: const EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    border: Border.all(color: Colors.white, width: 2),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Icon(
-                                    Icons.confirmation_number,
-                                    size: 14,
-                                    color: Colors.green,
-                                  ),
-                                ),
+                        ],
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user.name,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: mainColor,
                               ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'ID: ${user.userId}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: lightColor,
+                              ),
+                            ),
                           ],
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.edit, color: accentColor),
+                        onPressed: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditUserScreen(
+                                isNewUser: false,
+                                userId: user.userId,
+                              ),
+                            ),
+                          );
+                          if (result == true) {
+                            _loadUsers();
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Divider(color: ultraLightColor, thickness: 1),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Icon(Icons.phone, size: 16, color: lightColor),
+                            const SizedBox(width: 4),
+                            Text(
+                              user.phone,
+                              style: TextStyle(color: accentColor),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (user.couponIds.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: ultraLightColor,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
+                              Icon(Icons.confirmation_number, size: 14, color: accentColor),
+                              const SizedBox(width: 4),
                               Text(
-                                user.name,
-                                style: const TextStyle(
+                                '${user.couponIds.length} coupon',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: accentColor,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'ID: ${user.userId}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        // PopupMenuButton<String>(
-                        //   icon: const Icon(Icons.more_vert),
-                        //   onSelected: (value) async {
-                        //     if (value == 'edit') {
-                        //       final result = await Navigator.push(
-                        //         context,
-                        //         MaterialPageRoute(
-                        //           builder: (context) => EditUserScreen(
-                        //             isNewUser: false,
-                        //             userId: user.userId,
-                        //           ),
-                        //         ),
-                        //       );
-                        //       if (result == true) {
-                        //         _loadUsers();
-                        //       }
-                        //     } else if (value == 'delete') {
-                        //       showDialog(
-                        //         context: context,
-                        //         builder: (context) => AlertDialog(
-                        //           title: const Text('Xác nhận xóa'),
-                        //           content: Text(
-                        //             'Bạn có chắc chắn muốn xóa người dùng "${user.name}" không?',
-                        //           ),
-                        //           actions: [
-                        //             TextButton(
-                        //               onPressed: () => Navigator.pop(context),
-                        //               child: const Text('Hủy'),
-                        //             ),
-                        //             TextButton(
-                        //               onPressed: () {
-                        //                 Navigator.pop(context);
-                        //                 _deleteUser(user.userId);
-                        //               },
-                        //               child: const Text(
-                        //                 'Xóa',
-                        //                 style: TextStyle(color: Colors.red),
-                        //               ),
-                        //             ),
-                        //           ],
-                        //         ),
-                        //       );
-                        //     }
-                        //   },
-                        //   itemBuilder: (context) => [
-                        //     const PopupMenuItem(
-                        //       value: 'edit',
-                        //       child: Row(
-                        //         children: [
-                        //           Icon(Icons.edit, color: Colors.blue),
-                        //           SizedBox(width: 8),
-                        //           Text('Chỉnh sửa'),
-                        //         ],
-                        //       ),
-                        //     ),
-                        //     const PopupMenuItem(
-                        //       value: 'delete',
-                        //       child: Row(
-                        //         children: [
-                        //           Icon(Icons.delete, color: Colors.red),
-                        //           SizedBox(width: 8),
-                        //           Text('Xóa', style: TextStyle(color: Colors.red)),
-                        //         ],
-                        //       ),
-                        //     ),
-                        //   ],
-                        // ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Divider(color: Colors.grey[200]),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Icon(Icons.phone, size: 16, color: Colors.grey[600]),
-                              const SizedBox(width: 4),
-                              Text(
-                                user.phone,
-                                style: TextStyle(color: Colors.grey[800]),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Icon(Icons.access_time, size: 16, color: lightColor),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Cập nhật: ${DateFormat('dd/MM/yyyy - HH:mm').format(user.updatedAt)}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: lightColor,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        if (user.couponIds.isNotEmpty)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.confirmation_number, size: 14, color: Colors.green),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${user.couponIds.length} coupon',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.green,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Cập nhật: ${DateFormat('dd/MM/yyyy - HH:mm').format(user.updatedAt)}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),

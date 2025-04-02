@@ -22,6 +22,12 @@ class _AdminCouponFormScreenState extends State<AdminCouponFormScreen> {
   final CouponService _couponService = CouponService();
   final CloudinaryService _cloudinaryService = CloudinaryService();
 
+  // Color scheme based on provided colors
+  final Color mainColor = Color(0xFF162F4A); // Deep blue - primary
+  final Color accentColor = Color(0xFF3A5F82); // Medium blue - secondary
+  final Color lightColor = Color(0xFF718EA4); // Light blue - tertiary
+  final Color ultraLightColor = Color(0xFFD0DCE7); // Very light blue - background
+
   late TextEditingController _couponIdController;
   late TextEditingController _couponNameController;
   late TextEditingController _discountValueController;
@@ -81,9 +87,13 @@ class _AdminCouponFormScreenState extends State<AdminCouponFormScreen> {
       builder: (context, child) {
         return Theme(
           data: ThemeData.light().copyWith(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: Colors.teal,
+            colorScheme: ColorScheme.light(
+              primary: mainColor,
+              onPrimary: Colors.white,
+              surface: ultraLightColor,
+              onSurface: mainColor,
             ),
+            dialogBackgroundColor: Colors.white,
           ),
           child: child!,
         );
@@ -93,14 +103,13 @@ class _AdminCouponFormScreenState extends State<AdminCouponFormScreen> {
     if (picked != null) {
       setState(() {
         _selectedExpiredDate = picked;
-        // Optional: You can add a SnackBar to show the selected date
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               'Ngày hết hạn đã chọn: ${picked.day}/${picked.month}/${picked.year}',
               style: TextStyle(color: Colors.white),
             ),
-            backgroundColor: Colors.teal[600],
+            backgroundColor: mainColor,
             duration: Duration(seconds: 2),
           ),
         );
@@ -156,18 +165,22 @@ class _AdminCouponFormScreenState extends State<AdminCouponFormScreen> {
       builder: (context) => AlertDialog(
         title: Text(
           'Lỗi',
-          style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.red[700], fontWeight: FontWeight.bold),
         ),
         content: Text(
           'Không thể lưu mã giảm giá. Vui lòng thử lại.',
-          style: TextStyle(color: Colors.black87),
+          style: TextStyle(color: mainColor),
+        ),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
               'Đóng',
-              style: TextStyle(color: Colors.teal),
+              style: TextStyle(color: mainColor, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -178,7 +191,7 @@ class _AdminCouponFormScreenState extends State<AdminCouponFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: ultraLightColor,
       appBar: AppBar(
         title: Text(
           widget.existingCoupon == null
@@ -192,19 +205,27 @@ class _AdminCouponFormScreenState extends State<AdminCouponFormScreen> {
         centerTitle: true,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Icon(CupertinoIcons.back, color: Colors.white, size: 32),
+          icon: Icon(CupertinoIcons.back, color: Colors.white, size: 28),
         ),
-        backgroundColor: Colors.teal[600],
+        backgroundColor: mainColor,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(0),
+            bottomRight: Radius.circular(0),
+          ),
+        ),
       ),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Card(
-              elevation: 8,
+              elevation: 4,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
               ),
+              color: Colors.white,
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Form(
@@ -214,12 +235,12 @@ class _AdminCouponFormScreenState extends State<AdminCouponFormScreen> {
                     children: [
                       // Image Picker Section
                       _buildImagePicker(),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
 
                       // Coupon Details
                       _buildCouponDetailsForm(),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
 
                       // Submit Button
                       _buildSubmitButton(),
@@ -240,25 +261,24 @@ class _AdminCouponFormScreenState extends State<AdminCouponFormScreen> {
       child: Container(
         height: 250,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
-          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(16),
+          color: ultraLightColor,
+          border: Border.all(color: lightColor, width: 1),
         ),
         child: _pickedImage != null
             ? ClipRRect(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(16),
           child: Image.memory(
             _pickedImage!,
             fit: BoxFit.fitHeight,
-            // width: double.infinity,
           ),
         )
             : _existingImageUrl != null
             ? ClipRRect(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(16),
           child: Image.network(
             _existingImageUrl!,
             fit: BoxFit.fitHeight,
-            // width: double.infinity,
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) return child;
               return Center(
@@ -267,6 +287,7 @@ class _AdminCouponFormScreenState extends State<AdminCouponFormScreen> {
                       ? loadingProgress.cumulativeBytesLoaded /
                       loadingProgress.expectedTotalBytes!
                       : null,
+                  valueColor: AlwaysStoppedAnimation<Color>(mainColor),
                 ),
               );
             },
@@ -278,12 +299,12 @@ class _AdminCouponFormScreenState extends State<AdminCouponFormScreen> {
             Icon(
               Icons.camera_alt,
               size: 50,
-              color: Colors.grey[600],
+              color: accentColor,
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 12),
             Text(
               'Chọn Hình Ảnh Mã Giảm Giá',
-              style: TextStyle(color: Colors.grey[600]),
+              style: TextStyle(color: accentColor, fontWeight: FontWeight.w500),
             ),
           ],
         ),
@@ -301,7 +322,7 @@ class _AdminCouponFormScreenState extends State<AdminCouponFormScreen> {
           validator: (value) => value!.isEmpty ? 'Vui lòng nhập ID Mã Giảm Giá' : null,
           readOnly: widget.existingCoupon != null,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 18),
 
         // Coupon Name
         TextFormField(
@@ -309,7 +330,7 @@ class _AdminCouponFormScreenState extends State<AdminCouponFormScreen> {
           decoration: _inputDecoration('Tên Mã Giảm Giá', Icons.text_fields),
           validator: (value) => value!.isEmpty ? 'Vui lòng nhập Tên Mã Giảm Giá' : null,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 18),
 
         // Discount Type Row
         Row(
@@ -336,26 +357,26 @@ class _AdminCouponFormScreenState extends State<AdminCouponFormScreen> {
                   _isPercentage = index == 0;
                 });
               },
-              color: Colors.teal[200],
+              color: lightColor,
               selectedColor: Colors.white,
-              fillColor: Colors.teal[400],
-              borderColor: Colors.teal[200],
-              selectedBorderColor: Colors.teal[600],
+              fillColor: accentColor,
+              borderColor: lightColor,
+              selectedBorderColor: mainColor,
               borderRadius: BorderRadius.circular(8),
               children: const [
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Text('%'),
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Text('%', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Text('VND'),
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Text('VND', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 18),
 
         // Coupon Type and Minimum Purchase
         Row(
@@ -364,12 +385,17 @@ class _AdminCouponFormScreenState extends State<AdminCouponFormScreen> {
               child: DropdownButtonFormField<CouponType>(
                 value: _selectedType,
                 decoration: _inputDecoration('Loại Mã Giảm Giá', Icons.category),
+                dropdownColor: Colors.white,
+                iconEnabledColor: mainColor,
                 items: CouponType.values
                     .map((type) => DropdownMenuItem(
                   value: type,
-                  child: Text(type == CouponType.order
-                      ? 'Giảm Giá Đơn Hàng'
-                      : 'Giảm Giá Vận Chuyển'),
+                  child: Text(
+                    type == CouponType.order
+                        ? 'Giảm Giá Đơn Hàng'
+                        : 'Giảm Giá Vận Chuyển',
+                    style: TextStyle(color: mainColor),
+                  ),
                 ))
                     .toList(),
                 onChanged: (value) {
@@ -393,7 +419,7 @@ class _AdminCouponFormScreenState extends State<AdminCouponFormScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 18),
 
         // Optional Max Discount and Expiry Date
         Row(
@@ -443,20 +469,31 @@ class _AdminCouponFormScreenState extends State<AdminCouponFormScreen> {
     return InputDecoration(
       labelText: optional ? '$label (Tùy Chọn)' : label,
       hintText: value,
-      prefixIcon: Icon(icon, color: Colors.teal[300]),
+      prefixIcon: Icon(icon, color: accentColor),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.teal[100]!),
+        borderSide: BorderSide(color: lightColor),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.teal[100]!),
+        borderSide: BorderSide(color: lightColor),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.teal[400]!, width: 2),
+        borderSide: BorderSide(color: mainColor, width: 2),
       ),
-      labelStyle: TextStyle(color: Colors.teal[300]),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.red[700]!, width: 1),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.red[700]!, width: 2),
+      ),
+      labelStyle: TextStyle(color: accentColor),
+      errorStyle: TextStyle(color: Colors.red[700]),
+      fillColor: Colors.white,
+      filled: true,
     );
   }
 
@@ -464,11 +501,13 @@ class _AdminCouponFormScreenState extends State<AdminCouponFormScreen> {
     return ElevatedButton(
       onPressed: _submitForm,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.teal[600],
+        backgroundColor: mainColor,
+        foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
+        elevation: 2,
       ),
       child: Text(
         widget.existingCoupon == null ? 'Tạo Mã Giảm Giá' : 'Cập Nhật Mã Giảm Giá',

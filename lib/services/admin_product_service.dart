@@ -121,7 +121,9 @@ class AdminProductService {
   // Create a new product
   Future<void> addProduct(Product product) async {
     try {
-      DocumentReference productRef = await _firestore.collection("products").add({
+      DocumentReference productRef = _firestore.collection("products").doc(product.productId);
+
+      await productRef.set({
         'productId': product.productId,
         'productName': product.productName,
         'productImg': product.productImg,
@@ -135,7 +137,7 @@ class AdminProductService {
 
       // Add sizes for the product
       for (var size in product.sizes) {
-        await productRef.collection("size").add({
+        await productRef.collection("size").doc(size.sizeId).set({
           'sizeId': size.sizeId,
           'sizeName': size.sizeName,
           'extraPrice': size.extraPrice,
@@ -145,6 +147,7 @@ class AdminProductService {
       print("Error adding product: $e");
     }
   }
+
 
   // Update an existing product
   Future<void> updateProduct(Product product) async {

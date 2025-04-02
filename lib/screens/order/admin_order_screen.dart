@@ -11,6 +11,12 @@ import 'package:intl/intl.dart';
 
 import '../../utils/utils.dart';
 
+// App color scheme
+final Color mainColor = Color(0xFF162F4A);     // Deep blue - primary
+final Color accentColor = Color(0xFF3A5F82);   // Medium blue - secondary
+final Color lightColor = Color(0xFF718EA4);    // Light blue - tertiary
+final Color ultraLightColor = Color(0xFFD0DCE7); // Very light blue - background
+
 class AdminOrderScreen extends StatefulWidget {
   const AdminOrderScreen({super.key});
 
@@ -35,6 +41,17 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: ultraLightColor.withOpacity(0.3),
+      appBar: AppBar(
+        backgroundColor: mainColor,
+        foregroundColor: Colors.white,
+        title: Text('Quản lý đơn hàng', style: TextStyle(fontWeight: FontWeight.bold)),
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: Icon(CupertinoIcons.back, color: Colors.white),
+        ),
+      ),
       body: Column(
         children: [
           _buildFilterBar(),
@@ -53,32 +70,29 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: mainColor.withOpacity(0.1),
             spreadRadius: 1,
-            blurRadius: 2,
-            offset: Offset(0, 1),
+            blurRadius: 4,
+            offset: Offset(0, 2),
           ),
         ],
       ),
       child: Row(
         children: [
-          IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: Icon(
-                CupertinoIcons.back,
-                size: 32,
-              )),
           Expanded(
             child: Container(
+              height: 45,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(10),
+                color: ultraLightColor,
+                border: Border.all(color: lightColor.withOpacity(0.3)),
               ),
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
                   hintText: 'Tìm kiếm đơn hàng...',
-                  prefixIcon: Icon(Icons.search),
+                  hintStyle: TextStyle(color: lightColor),
+                  prefixIcon: Icon(Icons.search, color: accentColor),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(vertical: 12),
                 ),
@@ -92,15 +106,19 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
           ),
           SizedBox(width: 16),
           Container(
+            height: 45,
             padding: EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(10),
+              color: ultraLightColor,
+              border: Border.all(color: lightColor.withOpacity(0.3)),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _filterStatus,
-                hint: Text("Trạng thái"),
+                hint: Text("Trạng thái", style: TextStyle(color: accentColor)),
+                icon: Icon(Icons.arrow_drop_down, color: accentColor),
+                style: TextStyle(color: mainColor, fontWeight: FontWeight.w500),
                 items: ["all", ...statuses].map((status) {
                   return DropdownMenuItem(
                     value: status,
@@ -125,22 +143,21 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
       stream: _adminOrderService.getOrders(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator(color: accentColor));
         }
 
         List<OrderProduct> orders = snapshot.data!;
 
         // Apply filters
         if (_filterStatus != "all") {
-          orders =
-              orders.where((order) => order.status == _filterStatus).toList();
+          orders = orders.where((order) => order.status == _filterStatus).toList();
         }
 
         if (_searchQuery.isNotEmpty) {
           orders = orders
               .where((order) => order.orderId
-                  .toLowerCase()
-                  .contains(_searchQuery.toLowerCase()))
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase()))
               .toList();
         }
 
@@ -149,11 +166,11 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
+                Icon(Icons.inbox_outlined, size: 70, color: lightColor),
                 SizedBox(height: 16),
                 Text(
                   'Không tìm thấy đơn hàng nào',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                  style: TextStyle(fontSize: 16, color: accentColor, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -170,7 +187,10 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
               future: _adminAccountSerive.getUserAccount(order.userId),
               builder: (context, userSnapshot) {
                 if (!userSnapshot.hasData) {
-                  return Center(child: CircularProgressIndicator());
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(child: CircularProgressIndicator(color: accentColor)),
+                  );
                 }
 
                 UserInfo userInfo = userSnapshot.data!;
@@ -184,9 +204,8 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
     );
   }
 
-  Widget _buildOrderCard(
-      OrderProduct order, UserInfo user, BuildContext context) {
-    // Status color mapping
+  Widget _buildOrderCard(OrderProduct order, UserInfo user, BuildContext context) {
+    // Keep the original status colors as requested
     final Map<String, Color> statusColors = {
       'completed': Colors.teal.shade700,
       'cancelled': Colors.deepOrange.shade700,
@@ -195,24 +214,30 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
       'pending': Colors.purple.shade700,
     };
 
-    // Format date
     String formattedDate = DateFormat('dd/MM/yyyy HH:mm').format(order.createdAt);
     Color statusColor = statusColors[order.status] ?? Colors.grey.shade700;
 
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      elevation: 4,
+      elevation: 3,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: statusColor.withOpacity(0.2), width: 1),
+        side: BorderSide(color: statusColor.withOpacity(0.3), width: 1.5),
       ),
-      child: ExpansionTile(
-        tilePadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        title: _buildOrderHeader(order, formattedDate, statusColor),
-        children: [
-          Divider(height: 1, color: Colors.grey.shade300),
-          _buildOrderDetails(order, user, context),
-        ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: ExpansionTile(
+          tilePadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          collapsedBackgroundColor: Colors.white,
+          backgroundColor: ultraLightColor.withOpacity(0.2),
+          iconColor: accentColor,
+          collapsedIconColor: accentColor,
+          title: _buildOrderHeader(order, formattedDate, statusColor),
+          children: [
+            Divider(height: 1, color: lightColor.withOpacity(0.3)),
+            _buildOrderDetails(order, user, context),
+          ],
+        ),
       ),
     );
   }
@@ -222,9 +247,9 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
       children: [
         // Status Badge
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: statusColor.withOpacity(0.1),
+            color: statusColor.withOpacity(0.15),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: statusColor, width: 1),
           ),
@@ -248,13 +273,14 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
+                  color: mainColor,
                 ),
               ),
               SizedBox(height: 4),
               Text(
                 formattedDate,
                 style: TextStyle(
-                  color: Colors.grey,
+                  color: lightColor,
                   fontSize: 12,
                 ),
               ),
@@ -267,7 +293,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16,
-            color: Colors.deepPurple,
+            color: accentColor,
           ),
         ),
       ],
@@ -275,35 +301,80 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
   }
 
   Widget _buildOrderDetails(OrderProduct order, UserInfo user, BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(16),
+    return Container(
+      padding: EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Customer Information Section
-          _buildSectionHeader('Thông tin khách hàng'),
-          _infoRow('Tên', user.name),
-          _infoRow('Số điện thoại', user.phone),
-          _infoRow('Địa chỉ giao hàng', order.deliveryAddressName ?? 'Khách tự đến lấy'),
+          _buildSectionHeader('Thông tin khách hàng', CupertinoIcons.person),
+          Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: ultraLightColor, width: 1.5),
+            ),
+            child: Column(
+              children: [
+                _infoRow('Tên', user.name),
+                Divider(height: 16, color: ultraLightColor),
+                _infoRow('Số điện thoại', user.phone),
+                Divider(height: 16, color: ultraLightColor),
+                _infoRow('Địa chỉ giao hàng', order.deliveryAddressName ?? 'Khách tự đến lấy'),
+              ],
+            ),
+          ),
 
-          SizedBox(height: 16),
+          SizedBox(height: 20),
 
           // Order Details Section
-          _buildSectionHeader('Chi tiết đơn hàng'),
-          _infoRow('Phương thức thanh toán', order.paymentMethod),
-          _infoRow('Phí giao hàng', Utils.formatCurrency(order.deliveryFee)),
-          _infoRow('Chiết khấu đơn hàng', order.orderDiscount != null
-              ? Utils.formatCurrency(order.orderDiscount!)
-              : 'Không có'),
-          _infoRow('Ghi chú', order.note ?? 'Không có ghi chú'),
+          _buildSectionHeader('Chi tiết đơn hàng', CupertinoIcons.doc_text),
+          Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: ultraLightColor, width: 1.5),
+            ),
+            child: Column(
+              children: [
+                _infoRow('Phương thức thanh toán', order.paymentMethod),
+                Divider(height: 16, color: ultraLightColor),
+                _infoRow('Phí giao hàng', Utils.formatCurrency(order.deliveryFee)),
+                Divider(height: 16, color: ultraLightColor),
+                _infoRow('Chiết khấu đơn hàng', order.orderDiscount != null
+                    ? Utils.formatCurrency(order.orderDiscount!)
+                    : 'Không có'),
+                Divider(height: 16, color: ultraLightColor),
+                _infoRow('Ghi chú', order.note ?? 'Không có ghi chú'),
+              ],
+            ),
+          ),
 
-          SizedBox(height: 16),
+          SizedBox(height: 20),
 
           // Order Items Section
-          _buildSectionHeader('Sản phẩm'),
-          ...order.listCartItem.map((item) => _buildOrderItem(item)).toList(),
+          _buildSectionHeader('Sản phẩm', CupertinoIcons.cart),
+          Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: ultraLightColor, width: 1.5),
+            ),
+            child: Column(
+              children: order.listCartItem.map((item) => Column(
+                children: [
+                  _buildOrderItem(item),
+                  if (item != order.listCartItem.last)
+                    Divider(height: 16, color: ultraLightColor),
+                ],
+              )).toList(),
+            ),
+          ),
 
-          SizedBox(height: 16),
+          SizedBox(height: 20),
 
           // Status Management Section
           _buildStatusManagement(order, context),
@@ -312,16 +383,22 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(String title, IconData icon) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 8),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-          color: Colors.black87,
-        ),
+      padding: EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: accentColor),
+          SizedBox(width: 8),
+          Text(
+            title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              color: mainColor,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -334,12 +411,12 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
           Expanded(
             child: Text(
               item.productId,
-              style: TextStyle(fontWeight: FontWeight.w500),
+              style: TextStyle(fontWeight: FontWeight.w500, color: mainColor),
             ),
           ),
           Text(
             '${item.quantity} x ${Utils.formatCurrency(item.unitPrice)}',
-            style: TextStyle(color: Colors.grey.shade700),
+            style: TextStyle(color: accentColor, fontWeight: FontWeight.w500),
           ),
         ],
       ),
@@ -347,47 +424,104 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
   }
 
   Widget _buildStatusManagement(OrderProduct order, BuildContext context) {
+    // Keep the original status colors as requested
+    final Map<String, Color> statusColors = {
+      'completed': Colors.teal.shade700,
+      'cancelled': Colors.deepOrange.shade700,
+      'preparing': Colors.amber.shade700,
+      'delivering': Colors.blueAccent.shade700,
+      'pending': Colors.purple.shade700,
+    };
+
+    Color currentStatusColor = statusColors[order.status] ?? Colors.grey.shade700;
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  labelText: 'Cập nhật trạng thái',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-                value: order.status,
-                onChanged: (String? newStatus) {
-                  if (newStatus != null) {
-                    _adminOrderService.updateOrderStatus(order.orderId, newStatus);
-                  }
-                },
-                items: statuses.map((status) {
-                  return DropdownMenuItem(
-                    value: status,
-                    child: Text(_adminOrderService.getStatusText(status)),
-                  );
-                }).toList(),
-              ),
-            ),
-            SizedBox(width: 16),
-            ElevatedButton(
-              onPressed: () => _showCancelOrderDialog(context, order),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                shape: RoundedRectangleBorder(
+        _buildSectionHeader('Cập nhật trạng thái', CupertinoIcons.refresh),
+        Container(
+          padding: EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: currentStatusColor.withOpacity(0.3), width: 1.5),
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: currentStatusColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
+                child: Row(
+                  children: [
+                    Icon(CupertinoIcons.info_circle, color: currentStatusColor, size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      'Trạng thái hiện tại: ${_adminOrderService.getStatusText(order.status)}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: currentStatusColor,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Text('Hủy đơn'),
-            ),
-          ],
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: accentColor.withOpacity(0.3)),
+                      ),
+                      child: DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          labelText: 'Cập nhật trạng thái',
+                          labelStyle: TextStyle(color: accentColor),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                        value: order.status,
+                        dropdownColor: Colors.white,
+                        icon: Icon(Icons.arrow_drop_down, color: accentColor),
+                        onChanged: (String? newStatus) {
+                          if (newStatus != null) {
+                            _adminOrderService.updateOrderStatus(order.orderId, newStatus);
+                          }
+                        },
+                        items: statuses.map((status) {
+                          return DropdownMenuItem(
+                            value: status,
+                            child: Text(
+                              _adminOrderService.getStatusText(status),
+                              style: TextStyle(color: mainColor),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  ElevatedButton(
+                    onPressed: () => _showCancelOrderDialog(context, order),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade700,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text('Hủy đơn', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -397,22 +531,26 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Xác nhận hủy đơn hàng'),
+        title: Text('Xác nhận hủy đơn hàng', style: TextStyle(color: mainColor, fontWeight: FontWeight.bold)),
         content: Text('Bạn có chắc chắn muốn hủy đơn hàng này? Hành động này không thể hoàn tác.'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Quay lại'),
+            child: Text('Quay lại', style: TextStyle(color: accentColor)),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
               _adminOrderService.updateOrderStatus(order.orderId, "cancelled");
               Navigator.pop(context);
             },
-            child: Text(
-              'Xác nhận hủy',
-              style: TextStyle(color: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade700,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
+            child: Text('Xác nhận hủy', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -428,7 +566,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
           child: Text(
             '$label:',
             style: TextStyle(
-              color: Colors.grey.shade700,
+              color: lightColor,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -438,6 +576,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
             value,
             style: TextStyle(
               fontWeight: FontWeight.w500,
+              color: mainColor,
             ),
           ),
         ),
